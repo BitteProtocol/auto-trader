@@ -1,7 +1,28 @@
 export function formatRelativeTime(timestamp: string): string {
-  const date = new Date(timestamp)
+  // Handle PostgreSQL timestamp format and ensure proper parsing
+  let date: Date
+  
+  // If timestamp looks like PostgreSQL format without timezone, convert to ISO format
+  if (timestamp.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/)) {
+    // PostgreSQL timestamp - convert to ISO format and assume UTC
+    const isoString = timestamp.replace(' ', 'T') + 'Z'
+    date = new Date(isoString)
+  } else {
+    date = new Date(timestamp)
+  }
+  
+  // Fallback if date is still invalid
+  if (isNaN(date.getTime())) {
+    return 'Invalid date'
+  }
+  
   const now = new Date()
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  // Handle negative values (future dates)
+  if (seconds < 0) {
+    return 'Just now'
+  }
 
   if (seconds < 60) {
     return `${seconds}s ago`

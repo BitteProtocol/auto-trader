@@ -1,7 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatRelativeTime } from "@/lib/time-utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useRouter } from 'next/navigation'
 
 const tokensUrl = 'https://storage.googleapis.com/bitte-public/intents/tokens'
 const chainsUrl = 'https://storage.googleapis.com/bitte-public/intents/chains'
@@ -15,7 +14,7 @@ const TOKEN_ICONS: Record<string, string> = {
   USDT: `${tokensUrl}/usdt_token.svg`,
   XDAI: `${tokensUrl}/xdai_token.svg`,
   DAI: `${tokensUrl}/xdai_token.svg`,
-  SOL: `https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png`,
+  SOL: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png',
   REF: 'https://assets.coingecko.com/coins/images/18279/small/ref.png',
   FRAX: 'https://assets.coingecko.com/coins/images/13422/small/FRAX_icon.png',
   AURORA: '/aurora.svg',
@@ -65,76 +64,69 @@ const TOKEN_ICONS: Record<string, string> = {
   APT: "https://s2.coinmarketcap.com/static/img/coins/64x64/21794.png",
 }
 
-
-interface TradeLogTableProps {
+interface RealizedPnLTableProps {
   trades?: any[]
 }
 
-export function TradeLogTable({ trades: propTrades }: TradeLogTableProps) {
+export function RealizedPnLTable({ trades: propTrades }: RealizedPnLTableProps) {
   const trades = propTrades || []
-  const isLoading = !propTrades
-  const hasNoTrades = propTrades && propTrades.length === 0
-  const router = useRouter()
   
-  // Show all trades with scroll
-  const displayTrades = trades
-
-  const handleTradeClick = (tradeId: string) => {
-    router.push(`/trade/${tradeId}`)
-  }
+  // Filter for only SELL trades (realized P&L) and trades with actual P&L values
+  const realizedTrades = trades
+    .filter(trade => trade.type === 'SELL' && trade.pnl !== undefined && Number(trade.pnl) !== 0)
+    .slice(0, 10)
+  
+  const isLoading = !propTrades
+  const hasNoRealizedTrades = propTrades && realizedTrades.length === 0
+  
+  // Calculate total realized P&L
+  const totalRealizedPnL = realizedTrades.reduce((sum, trade) => sum + Number(trade.pnl || 0), 0)
   
   return (
-    <Card className="h-[600px] flex flex-col shadow-sm">
-      <CardHeader className="pb-4 px-4 md:px-6 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <CardTitle className="text-lg md:text-xl font-semibold">Live Trade Log</CardTitle>
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-          </span>
-          <span className="ml-2 text-sm text-muted-foreground">
-            {trades.length > 0 ? `${trades.length} trades` : ''}
-          </span>
-          {trades.length > 0 && (
-            <span className="ml-4 text-xs text-muted-foreground/70">
-              Click any trade for details
+    <Card className="h-full max-h-[600px] flex flex-col shadow-sm">
+      <CardHeader className="pb-4 px-4 md:px-6">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-lg md:text-xl font-semibold">Realized P&L</CardTitle>
+            <span className={`px-2 py-1 rounded-md text-xs font-semibold ${
+              totalRealizedPnL >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+            }`}>
+              {totalRealizedPnL >= 0 ? '+' : ''}${totalRealizedPnL.toFixed(2)}
             </span>
-          )}
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {realizedTrades.length > 0 ? `${realizedTrades.length} closed positions` : 'No closed positions yet'}
+          </span>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 p-0 min-h-0">
-        <div className="h-full overflow-y-auto custom-scrollbar">
+      <CardContent className="flex-1 p-0 overflow-hidden">
+        <div className="overflow-x-auto overflow-y-auto h-full custom-scrollbar">
           <Table>
             <TableHeader className="sticky top-0 bg-card z-10 border-b">
               <TableRow>
                 <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4">Time</TableHead>
                 <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4">Asset</TableHead>
-                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4 hidden sm:table-cell">Type</TableHead>
-                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4">Qty</TableHead>
-                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4 hidden md:table-cell">Price</TableHead>
-                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4">PnL</TableHead>
+                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4 hidden md:table-cell">Qty</TableHead>
+                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4 hidden sm:table-cell">Price</TableHead>
+                <TableHead className="text-xs font-medium whitespace-nowrap px-2 md:px-4">P&L</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Loading trades...
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    Loading realized trades...
                   </TableCell>
                 </TableRow>
-              ) : hasNoTrades ? (
+              ) : hasNoRealizedTrades ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No trades yet
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No realized trades yet
                   </TableCell>
                 </TableRow>
               ) : (
-                displayTrades.map((trade, index) => (
-                  <TableRow 
-                    key={trade.id || index} 
-                    className="hover:bg-muted/50 transition-colors cursor-pointer" 
-                    onClick={() => trade.id && handleTradeClick(trade.id)}
-                  >
+                realizedTrades.map((trade, index) => (
+                  <TableRow key={trade.id || index} className="hover:bg-muted/50 transition-colors">
                     <TableCell className="font-medium py-2 md:py-3 text-xs px-2 md:px-4">
                       <div className="whitespace-nowrap">{formatRelativeTime(trade.timestamp)}</div>
                     </TableCell>
@@ -150,60 +142,23 @@ export function TradeLogTable({ trades: propTrades }: TradeLogTableProps) {
                         <span className="text-xs md:text-sm truncate">{trade.asset}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-2 md:py-3 px-2 md:px-4 hidden sm:table-cell">
-                      <span
-                        className={`inline-flex items-center rounded-md px-1.5 md:px-2.5 py-0.5 text-xs font-semibold ${
-                          trade.type === "BUY" ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
-                        }`}
-                      >
-                        {trade.type}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-2 md:py-3 text-xs px-2 md:px-4">
-                      <div className="flex flex-col sm:hidden">
-                        <span className={`text-xs font-semibold mb-1 ${trade.type === "BUY" ? "text-green-500" : "text-red-500"}`}>
-                          {trade.type}
-                        </span>
-                        <span>{Number(trade.quantity).toFixed(4)}</span>
-                      </div>
-                      <div className="hidden sm:block">
-                        {Number(trade.quantity).toFixed(6)}
-                      </div>
-                    </TableCell>
                     <TableCell className="py-2 md:py-3 text-xs px-2 md:px-4 hidden md:table-cell">
+                      {Number(trade.quantity).toFixed(4)}
+                    </TableCell>
+                    <TableCell className="py-2 md:py-3 text-xs px-2 md:px-4 hidden sm:table-cell">
                       <div className="whitespace-nowrap">
                         ${Number(trade.price).toFixed(Number(trade.price) < 0.01 ? 8 : 2)}
                       </div>
                     </TableCell>
-                    <TableCell className={`py-2 md:py-3 font-semibold text-xs px-2 md:px-4`}>
-                      <div className="flex flex-col md:flex-row md:items-center gap-1">
-                        <span className="whitespace-nowrap">
-                          {trade.type === 'BUY' ? (
-                            // For BUY trades, show unrealized P&L if position is still open
-                            trade.remaining_quantity > 0 && trade.pnl !== 0 ? (
-                              <span className={`${trade.pnl >= 0 ? "text-green-500" : "text-red-500"} opacity-75`}>
-                                {trade.pnl >= 0 ? '+' : ''}${Number(trade.pnl).toFixed(2)}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )
-                          ) : (
-                            // For SELL trades, use realized_pnl if available, otherwise use calculated pnl
-                            (() => {
-                              const actualPnL = trade.realized_pnl !== undefined ? Number(trade.realized_pnl) : Number(trade.pnl);
-                              return actualPnL !== 0 ? (
-                                <span className={actualPnL >= 0 ? "text-green-500" : "text-red-500"}>
-                                  {actualPnL >= 0 ? '+' : ''}${actualPnL.toFixed(2)}
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground">$0.00</span>
-                              );
-                            })()
-                          )}
+                    <TableCell className={`py-2 md:py-3 font-semibold text-xs px-2 md:px-4 ${trade.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+                      <div className="flex flex-col">
+                        <span className="whitespace-nowrap font-bold">
+                          {trade.pnl >= 0 ? '+' : ''}${Math.abs(Number(trade.pnl)).toFixed(2)}
                         </span>
-                        <span className="text-xs text-muted-foreground md:hidden">
-                          ${Number(trade.price).toFixed(Number(trade.price) < 0.01 ? 6 : 2)}
-                        </span>
+                        <div className="flex flex-col text-xs text-muted-foreground md:hidden mt-1">
+                          <span>{Number(trade.quantity).toFixed(2)}</span>
+                          <span>${Number(trade.price).toFixed(Number(trade.price) < 0.01 ? 6 : 2)}</span>
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>

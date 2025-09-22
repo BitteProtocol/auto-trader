@@ -4,48 +4,50 @@ import { formatRelativeTime } from "@/lib/time-utils"
 
 const donations = [
   {
-    timestamp: "2023-08-18T10:00:00Z",
-    person: "Alice Smith",
-    amount: 500.0,
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    person: "CryptoFan88",
+    amount: 25.0,
   },
   {
-    timestamp: "2023-08-17T22:15:30Z",
-    person: "Bob Johnson",
-    amount: 1000.0,
+    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8 hours ago
+    person: "TradingBro",
+    amount: 10.0,
   },
   {
-    timestamp: "2023-08-17T15:45:00Z",
-    person: "Charlie Brown",
-    amount: 250.0,
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    person: "MoonWalker",
+    amount: 50.0,
   },
   {
-    timestamp: "2023-08-16T09:00:00Z",
-    person: "Diana Prince",
-    amount: 750.0,
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    person: "DiamondHands",
+    amount: 15.0,
   },
 ]
 
 export function DonationsTable() {
   return (
-    <Card className="p-6">
-      <CardHeader className="p-0 mb-4">
-        <CardTitle className="text-lg font-semibold">Recent Donations</CardTitle>
+    <Card className="shadow-sm">
+      <CardHeader className="pb-6">
+        <CardTitle className="text-xl font-semibold">Recent Donations</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 px-6 pb-6">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Person</TableHead>
-              <TableHead>Amount</TableHead>
+            <TableRow className="border-b">
+              <TableHead className="text-xs font-medium">Time</TableHead>
+              <TableHead className="text-xs font-medium">Person</TableHead>
+              <TableHead className="text-xs font-medium text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {donations.map((donation, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-medium">{formatRelativeTime(donation.timestamp)}</TableCell>
-                <TableCell>{donation.person}</TableCell>
-                <TableCell>${donation.amount.toFixed(2)}</TableCell>
+              <TableRow key={index} className="hover:bg-muted/50 transition-colors">
+                <TableCell className="font-medium py-3 text-sm">{formatRelativeTime(donation.timestamp)}</TableCell>
+                <TableCell className="py-3 font-medium">{donation.person}</TableCell>
+                <TableCell className="py-3 text-right font-semibold text-green-500">
+                  ${donation.amount.toFixed(2)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

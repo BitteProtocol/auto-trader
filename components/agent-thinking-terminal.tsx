@@ -3,30 +3,46 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 
-const thoughts = [
-  "Initializing AI agent...",
-  "Connecting to market data streams...",
-  "Analyzing historical price trends for BTC, ETH, ADA...",
-  "Evaluating current volatility and liquidity metrics...",
-  "Running predictive models for short-term movements...",
-  "Identifying potential entry points based on strategy 'AlphaWave'...",
-  "Monitoring real-time order book depth...",
-  "Detecting significant whale movements...",
-  "Calculating optimal trade size and risk parameters...",
-  "Executing trade: BUY 0.05 BTC @ $29,500.00...",
-  "Trade executed successfully. Monitoring PnL...",
-  "Adjusting stop-loss and take-profit levels...",
-  "Agent is now actively trading. Standby for next action...",
-  "Scanning for news sentiment impacting crypto markets...",
-  "Evaluating portfolio rebalancing opportunities...",
-  "Agent thinking complete. Awaiting next cycle...",
-]
+interface AgentThinkingTerminalProps {
+  reasoning?: string
+}
 
-export function AgentThinkingTerminal() {
+export function AgentThinkingTerminal({ reasoning }: AgentThinkingTerminalProps) {
   const [displayedLines, setDisplayedLines] = useState<string[]>([])
   const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0)
   const [currentCharIndex, setCurrentCharIndex] = useState(0)
   const [showCursor, setShowCursor] = useState(true)
+  const [updateCountdown, setUpdateCountdown] = useState(60) // 1 minute in seconds
+
+  // Countdown timer
+  useEffect(() => {
+    const countdownInterval = setInterval(() => {
+      setUpdateCountdown((prev) => {
+        if (prev <= 1) {
+          // Reset to 1 minute when countdown reaches 0
+          return 60
+        }
+        return prev - 1
+      })
+    }, 1000)
+    
+    return () => clearInterval(countdownInterval)
+  }, [])
+
+  // Format countdown to MM:SS
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const thoughts = reasoning 
+    ? [reasoning]
+    : [
+        "Initializing $1K to $10K Challenge Agent...",
+        "Scanning market for high probability setups...",
+        "Waiting for AI reasoning data..."
+      ]
 
   useEffect(() => {
     if (currentThoughtIndex < thoughts.length) {
@@ -64,7 +80,7 @@ export function AgentThinkingTerminal() {
       }, 5000) // Delay before restarting
       return () => clearTimeout(timeout)
     }
-  }, [currentThoughtIndex, currentCharIndex])
+  }, [currentThoughtIndex, currentCharIndex, reasoning])
 
   // Cursor blinking effect
   useEffect(() => {
@@ -75,22 +91,39 @@ export function AgentThinkingTerminal() {
   }, [])
 
   return (
-    <Card className="w-full font-mono text-green-400">
-        <CardTitle className="text-sm pt-4 px-4 font-normal text-muted-foreground">Agent Strategy...</CardTitle>
-      <CardContent className="p-6 text-sm h-[200px] overflow-y-auto custom-scrollbar">
-        {" "}
-        {/* Adjusted height to 200px */}
-        {displayedLines.map((line, index) => (
-          <div key={index} className="whitespace-pre-wrap">
-            {line}
-            {index === displayedLines.length - 1 &&
-              showCursor &&
-              (currentThoughtIndex < thoughts.length ||
-                (currentThoughtIndex === thoughts.length && currentCharIndex === 0)) && (
-                <span className="animate-pulse">_</span>
-              )}
+    <Card className="shadow-sm">
+      <CardHeader className="pb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-xl font-semibold">Agent Strategy</CardTitle>
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+            </span>
           </div>
-        ))}
+          <div className="text-sm font-medium text-green-500 flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+            </span>
+            Updating in {formatCountdown(updateCountdown)}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="h-[200px]">
+        <div className="font-mono text-sm text-green-500 dark:text-green-400 h-full overflow-y-auto custom-scrollbar">
+          {displayedLines.map((line, index) => (
+            <div key={index} className="whitespace-pre-wrap">
+              {line}
+              {index === displayedLines.length - 1 &&
+                showCursor &&
+                (currentThoughtIndex < thoughts.length ||
+                  (currentThoughtIndex === thoughts.length && currentCharIndex === 0)) && (
+                  <span className="animate-pulse">_</span>
+                )}
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   )
