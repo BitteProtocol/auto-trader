@@ -2,6 +2,7 @@ import { Account } from "near-api-js"
 import { AgentContext, PositionWithPnL } from "./types"
 import { fetchPortfolioBalances, calculatePositionsPnL, fetchMarketPrices } from "./market"
 import { getCurrentPositions } from "./memory"
+import { TOKEN_LIST } from "./utils"
 
 export async function buildAgentContext(accountId: string, account: Account): Promise<AgentContext> {
   const [portfolio, { marketPrices, marketOverviewData }, currentPositions] = await Promise.all([
@@ -86,6 +87,9 @@ AVAILABLE USDC: $${positionsWithPnl.find(pos => pos.symbol === 'USDC')?.usd_valu
 === MARKET DATA ===
 ${marketOverviewData}
 
+=== NEP141 ASSET IDS ===
+${TOKEN_LIST.map(token => `${token.symbol}: "${token.assetId}"`).join('\n')}
+
 === WALL STREET STRATEGY: 3-STEP DECISION PROCESS ===
 
 STEP 1: PORTFOLIO RISK MANAGEMENT
@@ -119,16 +123,6 @@ STEP 3: POSITION SIZING & EXECUTION
 • HOLD FLEXIBILITY: No arbitrary time limits, exit based on data and targets
 • TRADING FREQUENCY: Up to around 10 trades per day if opportunities exist, otherwise wait
 • STEP BUDGET: Portfolio check (0 steps) → Analysis (max 2 steps) → Quote (1 step)
-
-=== NEP141 ASSET IDS ===
-USDC: "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
-SOL: "nep141:sol.omft.near"
-ETH: "nep141:eth.omft.near" 
-BTC: "nep141:btc.omft.near"
-wNEAR: "nep141:wrap.near"
-ARB: "nep141:arb-0x912ce59144191c1204e64559fe8253a0e49e6548.omft.near"
-SUI: "nep141:sui.omft.near"
-PEPE: "nep141:eth-0x6982508145454ce325ddbe47a25d4ec3d2311933.omft.near"
 
 === NATURAL TRADING FLOW ===
 Think and execute like a professional day trader. No forms, no bureaucracy.

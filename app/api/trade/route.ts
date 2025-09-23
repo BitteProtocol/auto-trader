@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { callAgent } from '@bitte-ai/agent-sdk'
 import { Quote, ToolResult } from '@/lib/types'
 import { BALANCE_UPDATE_DELAY, logTradingAgentData } from '@/lib/utils'
-import { storeActualTrade, storePortfolioSnapshot } from '@/lib/memory'
+import { ensureDatabaseSetup, storeActualTrade, storePortfolioSnapshot } from '@/lib/memory'
 import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
 import { buildAgentContext } from '@/lib/agent-context'
-
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +17,9 @@ export async function GET(request: NextRequest) {
     if (!accountId) {
       return NextResponse.json({ error: 'accountId is required' }, { status: 400 })
     }
+    
+    await ensureDatabaseSetup()
+    
     const agentId = 'trading-agent-kappa.vercel.app'
 
     const account = await initializeNearAccount(accountId)

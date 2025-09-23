@@ -76,6 +76,14 @@ export const TOKEN_LIST: Token[] = [
     "priceUpdatedAt": "2025-07-24T11:27:05.100Z"
   },
   {
+    "assetId": "nep245:v2_1.omni.hot.tg:43114_11111111111111111111",
+    "decimals": 18,
+    "blockchain": "avax",
+    "symbol": "AVAX",
+    "price": 34.31,
+    "priceUpdatedAt": "2025-09-23T13:26:31.568Z"
+    },
+  {
     "assetId": "nep141:base-0x532f27101965dd16442e59d40670faf5ebb142e4.omft.near",
     "decimals": 18,
     "blockchain": "base",

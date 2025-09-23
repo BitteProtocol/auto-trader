@@ -1,6 +1,23 @@
 {
-  "crons": [{
-    "path": "/api/trade",
-    "schedule": "*/45 * * * *"
-  }]
+  "crons": [
+    {
+      "path": "/api/trade",
+      "schedule": "*/45 * * * *"
+    }
+  ],
+  "functions": {
+    "app/api/trade/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/dashboard/route.ts": {
+      "maxDuration": 15
+    }
+  },
+  "env": {
+    "BITTE_API_KEY": "@bitte_api_key",
+    "DATABASE_URL": "@database_url", 
+    "ACCOUNT_ID": "@account_id",
+    "NEAR_PK": "@near_pk",
+    "CRON_SECRET": "@cron_secret"
+  }
 }
