@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callAgent } from '@bitte-ai/agent-sdk'
-import { Quote, ToolResult } from '@/lib/types'
+import { ToolResult } from '@/lib/types'
 import { BALANCE_UPDATE_DELAY, logTradingAgentData } from '@/lib/utils'
 import { ensureDatabaseSetup, storeActualTrade, storePortfolioSnapshot } from '@/lib/memory'
 import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
@@ -8,9 +8,11 @@ import { buildAgentContext } from '@/lib/agent-context'
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (process.env.CRON_SECRET) {
+      const authHeader = request.headers.get('Authorization')
+      if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
 
     const accountId = process.env.ACCOUNT_ID

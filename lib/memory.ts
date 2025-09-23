@@ -1,11 +1,30 @@
-import { TOKEN_LIST } from "./utils"
+import { normalizeAsset, parseAiReasoning, roundToTwo, TOKEN_LIST } from "./utils"
 import { Pool } from 'pg'
 import { Quote, CurrentPosition, PositionWithPnL } from './types'
 
+const MARKET_API_URL = 'https://trading-agent-kappa.vercel.app/api/tools/market-overview'
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   })
+
+const findMarketPrice = (marketPrices: any[], asset: string) => {
+  return marketPrices.find((p: any) => {
+    const marketSymbol = p.symbol.replace('USDT', '')
+    return (
+      asset === marketSymbol ||
+      (asset === 'wNEAR' && marketSymbol === 'NEAR')
+    )
+  })?.price || 0
+}
+
+const TRADE_COLUMNS = `
+  id, 
+  timestamp AT TIME ZONE 'UTC' as timestamp,
+  account_id, asset, type, quantity, entry_price, amount_usd,
+  COALESCE(remaining_quantity, 0) as remaining_quantity,
+  COALESCE(realized_pnl, 0) as realized_pnl
+`
 
 
   export async function ensureDatabaseSetup() {
@@ -89,7 +108,7 @@ export async function storeActualTrade(accountId: string, quote: Quote): Promise
           VALUES ($1, $2, $3, $4, $5, $6, $4)
         `
         await pool.query(query, [accountId, asset, 'BUY', quantity, exitPrice, amountUsd])
-        console.log(`BUY stored: ${quantity} ${asset} @ $${exitPrice.toFixed(4)} = $${amountUsd}`)
+        console.log(`BUY stored: ${quantity} ${asset} @ $${exitPrice.toFixed(4)} = $${roundToTwo(amountUsd)}`)
       } else {
         // SELL trade: Use FIFO to match against open BUY positions
         await processSellTrade(accountId, asset, quantity, exitPrice, amountUsd)
@@ -114,7 +133,6 @@ export async function storeActualTrade(accountId: string, quote: Quote): Promise
     let weightedAvgEntryPrice = 0
     let totalMatchedQty = 0
     
-    // Match sell quantity against open buy positions (FIFO)
     for (const position of openPositions.rows) {
       if (remainingSellQty <= 0) break
       
@@ -122,15 +140,12 @@ export async function storeActualTrade(accountId: string, quote: Quote): Promise
       const matchedQty = Math.min(remainingSellQty, availableQty)
       const entryPrice = parseFloat(position.entry_price)
       
-      // Calculate realized P&L for this portion
       const realizedPnl = (exitPrice - entryPrice) * matchedQty
       totalRealizedPnl += realizedPnl
       
-      // Track weighted average entry price
       weightedAvgEntryPrice += entryPrice * matchedQty
       totalMatchedQty += matchedQty
       
-      // Update remaining quantity on the buy position
       const newRemainingQty = availableQty - matchedQty
       await pool.query(
         'UPDATE actual_trades SET remaining_quantity = $1 WHERE id = $2',
@@ -139,14 +154,13 @@ export async function storeActualTrade(accountId: string, quote: Quote): Promise
       
       remainingSellQty -= matchedQty
       
-      console.log(`FIFO match: ${matchedQty} ${asset} @ entry $${entryPrice.toFixed(4)} -> exit $${exitPrice.toFixed(4)} = PnL $${realizedPnl.toFixed(2)}`)
+      console.log(`FIFO match: ${matchedQty} ${asset} @ entry $${entryPrice.toFixed(4)} -> exit $${exitPrice.toFixed(4)} = PnL $${roundToTwo(realizedPnl)}`)
     }
     
     if (totalMatchedQty > 0) {
       weightedAvgEntryPrice = weightedAvgEntryPrice / totalMatchedQty
     }
     
-    // Store the SELL trade with proper entry price and realized P&L
     const sellQuery = `
       INSERT INTO actual_trades (account_id, asset, type, quantity, entry_price, amount_usd, remaining_quantity, realized_pnl)
       VALUES ($1, $2, $3, $4, $5, $6, 0, $7)
@@ -156,12 +170,12 @@ export async function storeActualTrade(accountId: string, quote: Quote): Promise
       asset, 
       'SELL', 
       sellQuantity, 
-      weightedAvgEntryPrice, // Store the weighted average entry price of matched positions
+      weightedAvgEntryPrice, 
       totalUsdReceived, 
       totalRealizedPnl
     ])
     
-    console.log(`SELL stored: ${sellQuantity} ${asset} @ avg entry $${weightedAvgEntryPrice.toFixed(4)} -> exit $${exitPrice.toFixed(4)} | Realized P&L: $${totalRealizedPnl.toFixed(2)}`)
+    console.log(`SELL stored: ${sellQuantity} ${asset} @ avg entry $${weightedAvgEntryPrice.toFixed(4)} -> exit $${exitPrice.toFixed(4)} | Realized P&L: $${roundToTwo(totalRealizedPnl)}`)
     
     if (remainingSellQty > 0) {
       console.warn(`Warning: Sold ${remainingSellQty} ${asset} without matching buy positions (short selling)`)
@@ -196,13 +210,12 @@ export async function storeActualTrade(accountId: string, quote: Quote): Promise
                      VALUES ($1, $2, $3, $4, $5)`
       await pool.query(query, [accountId, JSON.stringify(snapshotData), totalUsd, pnlUsd, pnlPercent])
       
-      console.log(`Portfolio snapshot: $${totalUsd.toFixed(2)} (${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%) | Reasoning: ${cleanReasoning ? 'Stored' : 'None'}`)
+      console.log(`Portfolio snapshot: $${roundToTwo(totalUsd)} (${pnlPercent >= 0 ? '+' : ''}${roundToTwo(pnlPercent)}%) | Reasoning: ${cleanReasoning ? 'Stored' : 'None'}`)
     } catch (error) {
       console.error('Error storing portfolio snapshot:', error)
     }
   }
-
-  // Database Service Functions
+      
 export async function getCurrentPositions(accountId: string): Promise<CurrentPosition[]> {
     try {
       const query = `
@@ -230,3 +243,201 @@ export async function getCurrentPositions(accountId: string): Promise<CurrentPos
       return []
     }
   }
+
+export async function getPortfolioSnapshots(accountId: string) {
+  try {
+    const query = `
+      SELECT id, snapshot_data, total_usd_value, pnl_usd, pnl_percent, created_at
+      FROM portfolio_snapshots 
+      WHERE account_id = $1 
+      ORDER BY created_at DESC
+    `
+    const result = await pool.query(query, [accountId])
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching portfolio snapshots:', error)
+    return []
+  }
+}
+
+export async function getTrades(accountId: string, limit = 100) {
+  try {
+    const query = `SELECT ${TRADE_COLUMNS} FROM actual_trades WHERE account_id = $1 ORDER BY timestamp DESC LIMIT $2`
+    const result = await pool.query(query, [accountId, limit])
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching trades:', error)
+    return []
+  }
+}
+
+async function fetchMarketPrices() {
+  const symbols = 'BTCUSDT,ETHUSDT,BNBUSDT,SOLUSDT,NEARUSDT,ARBUSDT,SUIUSDT,PEPEUSDT,WIFUSDT'
+  try {
+    const response = await fetch(`${MARKET_API_URL}?symbols=${symbols}`)
+    const result = await response.json()
+    return result.success ? result.data : []
+  } catch (error) {
+    console.warn('Failed to fetch market prices:', error)
+    return []
+  }
+}
+
+export async function buildDashboardData(accountId: string) {
+  const snapshots = await getPortfolioSnapshots(accountId)
+  
+  if (snapshots.length === 0) {
+    return {
+      totalValue: 0,
+      startingValue: 0,
+      goalValue: 0,
+      accruedYield: 0,
+      yieldPercent: 0,
+      trades: [],
+      assetDistribution: [],
+      statsChart: [],
+      lastReasoning: "No data available",
+      requestCount: 0,
+      lastUpdate: null
+    }
+  }
+
+  const latest = snapshots[0]
+  const earliest = snapshots[snapshots.length - 1]
+  const totalValue = latest.total_usd_value
+  const startingValue = earliest.total_usd_value
+  const goalValue = startingValue * 2
+  const accruedYield = totalValue - startingValue
+  const yieldPercent = startingValue > 0 ? (accruedYield / startingValue) * 100 : 0
+
+  const assetDistribution = latest.snapshot_data?.positions?.map((pos: any) => ({
+    symbol: normalizeAsset(pos.symbol),
+    value: pos.usd_value,
+    percentage: (pos.usd_value / totalValue) * 100,
+    change: pos.pnl_percent || 0
+  })) || []
+
+  const marketPrices = await fetchMarketPrices()
+  const tradeRows = await getTrades(accountId, 100)
+  
+  const trades = tradeRows.map(trade => {
+    let pnl = 0
+    
+    if (trade.type === 'SELL') {
+      pnl = Number(trade.realized_pnl || 0)
+    } else {
+      const currentPrice = findMarketPrice(marketPrices, trade.asset)
+      const remainingQty = Number(trade.remaining_quantity || 0)
+      pnl = currentPrice > 0 ? (currentPrice - Number(trade.entry_price)) * remainingQty : 0
+    }
+    
+    return {
+      id: trade.id,
+      timestamp: trade.timestamp,
+      type: trade.type,
+      asset: normalizeAsset(trade.asset),
+      quantity: Number(trade.quantity),
+      price: Number(trade.entry_price),
+      amount: Number(trade.amount_usd),
+      pnl: roundToTwo(pnl),
+      pnlPercent: Number(trade.entry_price) > 0 ? roundToTwo((pnl / Number(trade.amount_usd)) * 100) : 0,
+      portfolioValue: totalValue,
+      remaining_quantity: Number(trade.remaining_quantity || 0),
+      realized_pnl: Number(trade.realized_pnl || 0)
+    }
+  })
+
+  const statsChart = snapshots
+    .slice(0, 500)
+    .reverse()
+    .map((snap) => {
+      const date = new Date(snap.created_at)
+      const timeLabel = `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`
+      
+      return {
+        date: timeLabel,
+        value: roundToTwo(snap.total_usd_value),
+        timestamp: snap.created_at,
+        pnl: snap.pnl_usd || 0
+      }
+    })
+
+  const lastReasoning = parseAiReasoning(latest.snapshot_data)
+
+  return {
+    totalValue: roundToTwo(totalValue),
+    startingValue: roundToTwo(startingValue),
+    goalValue: roundToTwo(goalValue),
+    accruedYield: roundToTwo(accruedYield),
+    yieldPercent: roundToTwo(yieldPercent),
+    trades,
+    assetDistribution,
+    statsChart,
+    lastReasoning,
+    requestCount: snapshots.length,
+    lastUpdate: latest.created_at
+  }
+}
+
+export async function getTradeDetail(tradeId: string) {
+  try {
+    const tradeQuery = `SELECT ${TRADE_COLUMNS} FROM actual_trades WHERE id = $1`
+    const tradeResult = await pool.query(tradeQuery, [tradeId])
+
+    if (tradeResult.rows.length === 0) {
+      return null
+    }
+
+    const trade = tradeResult.rows[0]
+    const tradeTimestamp = new Date(trade.timestamp)
+
+    const snapshotQuery = `
+      SELECT id, snapshot_data, total_usd_value, created_at
+      FROM portfolio_snapshots 
+      WHERE account_id = $1 
+        AND created_at BETWEEN $2 AND $3
+      ORDER BY ABS(EXTRACT(EPOCH FROM (created_at - $2::timestamp)))
+      LIMIT 1
+    `
+    
+    const oneHourAfter = new Date(tradeTimestamp.getTime() + 60 * 60 * 1000)
+    const snapshotResult = await pool.query(snapshotQuery, [
+      trade.account_id,
+      tradeTimestamp,
+      oneHourAfter
+    ])
+
+    let reasoning = "No reasoning data available for this trade."
+    let marketConditions = ""
+    let portfolioValue = 0
+
+    if (snapshotResult.rows.length > 0) {
+      const snapshot = snapshotResult.rows[0]
+      portfolioValue = snapshot.total_usd_value || 0
+      reasoning = parseAiReasoning(snapshot.snapshot_data, "No reasoning data available for this trade.")
+
+      if (snapshot.snapshot_data?.market_analysis) {
+        marketConditions = snapshot.snapshot_data.market_analysis
+      }
+    }
+
+    const pnl = trade.type === 'SELL' ? Number(trade.realized_pnl || 0) : 0
+
+    return {
+      id: trade.id,
+      timestamp: trade.timestamp,
+      asset: normalizeAsset(trade.asset),
+      type: trade.type,
+      quantity: Number(trade.quantity),
+      price: Number(trade.entry_price),
+      amount: Number(trade.amount_usd),
+      pnl: roundToTwo(pnl),
+      reasoning,
+      marketConditions: marketConditions || undefined,
+      portfolioValue: roundToTwo(portfolioValue)
+    }
+  } catch (error) {
+    console.error('Error fetching trade detail:', error)
+    return null
+  }
+}

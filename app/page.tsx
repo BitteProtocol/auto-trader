@@ -10,9 +10,9 @@ import { RealizedPnLTable } from "@/components/realized-pnl-table"
 interface DashboardData {
   totalValue: number
   startingValue: number
+  goalValue: number
   accruedYield: number
   yieldPercent: number
-  progress: number
   trades: any[]
   assetDistribution: any[]
   statsChart: any[]
@@ -20,8 +20,6 @@ interface DashboardData {
   requestCount: number
   lastUpdate: string | null
 }
-
-const GOAL = 100
 
 export default function Page() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -109,7 +107,7 @@ export default function Page() {
             </div>
           </div>
           <div className="text-2xl md:text-3xl font-semibold text-muted-foreground">
-            ${(data.totalValue || 0).toLocaleString()} / ${GOAL.toLocaleString()}
+            ${(data.totalValue || 0).toLocaleString()} / ${(data.goalValue || 0).toLocaleString()}
           </div>
         </div>
         
@@ -124,20 +122,20 @@ export default function Page() {
             <div className="w-full max-w-lg">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-semibold text-green-500">{((data.totalValue || 0) / GOAL * 100).toFixed(1)}%</span>
+                <span className="font-semibold text-green-500">{(data.goalValue > 0 ? ((data.totalValue || 0) / data.goalValue * 100).toFixed(1) : '0.0')}%</span>
               </div>
               <div className="h-3 bg-muted/30 rounded-full overflow-hidden relative">
                 <div 
                   className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-700 ease-out relative"
-                  style={{ width: `${Math.min((data.totalValue || 0) / GOAL * 100, 100)}%` }}
+                  style={{ width: `${Math.min(data.goalValue > 0 ? ((data.totalValue || 0) / data.goalValue * 100) : 0, 100)}%` }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20" />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-                <span>Started: ${(data.startingValue || 100).toLocaleString()}</span>
-                <span>Goal: ${GOAL.toLocaleString()}</span>
+                <span>Started: ${(data.startingValue || 0).toLocaleString()}</span>
+                <span>Goal: ${(data.goalValue || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>

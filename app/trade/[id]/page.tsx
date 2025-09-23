@@ -57,7 +57,7 @@ export default function TradeDetailPage() {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch(`/api/trade/${tradeId}`)
+      const response = await fetch(`/api/dashboard/${tradeId}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch trade details')

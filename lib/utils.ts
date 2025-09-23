@@ -173,3 +173,25 @@ export function logTradingAgentData({
   console.log("tradeResult", content, quote)
   console.log("==========================")
 }
+
+
+export const roundToTwo = (value: number) => Math.round(value * 100) / 100
+
+export const normalizeAsset = (asset: string) => asset === 'wNEAR' ? 'NEAR' : asset
+
+export const parseAiReasoning = (snapshotData: any, fallback = "Agent processing market data...") => {
+  if (snapshotData?.reasoning) {
+    return snapshotData.reasoning
+  }
+  
+  if (snapshotData?.raw_ai_response) {
+    try {
+      const parsed = JSON.parse(snapshotData.raw_ai_response)
+      return parsed.reasoning || parsed.action || "Agent decision recorded"
+    } catch {
+      return snapshotData.raw_ai_response.substring(0, 200) + "..."
+    }
+  }
+  
+  return fallback
+}
