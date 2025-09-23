@@ -4,11 +4,11 @@ An autonomous crypto trading dashboard that uses AI agents to make trading decis
 
 ## ⚡ One-Click Deploy
 
-Deploy to Vercel in seconds with **automatic database provisioning**:
+Deploy to Vercel instantly (auto database, no config):
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard&env=BITTE_API_KEY,ACCOUNT_ID,NEAR_PK,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20the%20trading%20dashboard&envLink=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard%23environment-setup&project-name=crypto-trading-dashboard&redirect-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader&env=BITTE_API_KEY,ACCOUNT_ID,NEAR_PK,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20the%20trading%20dashboard&envLink=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader%23environment-setup&project-name=auto-trader&redirect-url=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
 
-🎯 **Database auto-provisioned** - No manual database setup required!
+**No manual DB setup. Just click and go.**
 
 ## 📋 Environment Setup
 
