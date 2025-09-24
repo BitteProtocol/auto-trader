@@ -78,34 +78,35 @@ export async function ensureDatabaseSetup(force = false): Promise<void> {
 	const tableQueries = [
 		`CREATE TABLE IF NOT EXISTS public.actual_trades (
       id SERIAL PRIMARY KEY,
-      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      account_id VARCHAR(255) NOT NULL,
-      asset VARCHAR(50) NOT NULL,
-      type VARCHAR(10) NOT NULL CHECK (type IN ('BUY', 'SELL')),
-      quantity DECIMAL(20, 8) NOT NULL,
-      entry_price DECIMAL(20, 8) NOT NULL,
-      amount_usd DECIMAL(20, 2) NOT NULL,
-      remaining_quantity DECIMAL(20, 8) DEFAULT 0,
-      realized_pnl DECIMAL(20, 2) DEFAULT 0
+      account_id TEXT NOT NULL,
+      asset TEXT NOT NULL,
+      type TEXT NOT NULL,
+      quantity NUMERIC NOT NULL,
+      entry_price NUMERIC NOT NULL,
+      amount_usd NUMERIC NOT NULL,
+      timestamp TIMESTAMP DEFAULT now(),
+      remaining_quantity NUMERIC DEFAULT 0,
+      realized_pnl NUMERIC DEFAULT 0
     )`,
 		`CREATE TABLE IF NOT EXISTS public.portfolio_snapshots (
       id SERIAL PRIMARY KEY,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      account_id VARCHAR(255) NOT NULL,
+      account_id TEXT NOT NULL,
       snapshot_data JSONB NOT NULL,
-      total_usd_value DECIMAL(20, 2) NOT NULL,
-      pnl_usd DECIMAL(20, 2) DEFAULT 0,
-      pnl_percent DECIMAL(10, 4) DEFAULT 0
+      total_usd_value NUMERIC(20,6) NOT NULL,
+      pnl_usd NUMERIC(20,6) DEFAULT 0,
+      pnl_percent NUMERIC(10,4) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT now()
     )`,
 	];
 
 	const indexQueries = [
 		`CREATE INDEX IF NOT EXISTS idx_actual_trades_account_id ON public.actual_trades(account_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_actual_trades_timestamp ON public.actual_trades(timestamp DESC)`,
+		`CREATE INDEX IF NOT EXISTS idx_actual_trades_timestamp ON public.actual_trades(timestamp)`,
 		`CREATE INDEX IF NOT EXISTS idx_actual_trades_asset_type ON public.actual_trades(asset, type)`,
-		`CREATE INDEX IF NOT EXISTS idx_actual_trades_remaining_qty ON public.actual_trades(remaining_quantity) WHERE remaining_quantity > 0`,
+		`CREATE INDEX IF NOT EXISTS idx_actual_trades_remaining_qty ON public.actual_trades(remaining_quantity)`,
 		`CREATE INDEX IF NOT EXISTS idx_portfolio_snapshots_account_id ON public.portfolio_snapshots(account_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_portfolio_snapshots_created_at ON public.portfolio_snapshots(created_at DESC)`,
+		`CREATE INDEX IF NOT EXISTS idx_portfolio_snapshots_created_at ON public.portfolio_snapshots(created_at)`,
+		`CREATE INDEX IF NOT EXISTS idx_portfolio_account_time ON public.portfolio_snapshots(account_id, created_at)`,
 	];
 
 	try {

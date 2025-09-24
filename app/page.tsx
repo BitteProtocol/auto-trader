@@ -27,7 +27,6 @@ export default function Page() {
 	const [loading, setLoading] = useState(true);
 	const [timeToUpdate, setTimeToUpdate] = useState<string>("");
 
-	// Fetch data effect
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
