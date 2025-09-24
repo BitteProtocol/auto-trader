@@ -8,7 +8,7 @@ An autonomous crypto trading agent that references market decisions and then use
 
 Deploy to Vercel instantly, by clicking this button you will be taken to a page where you can fill in the required environment variables and then click deploy, this will also automatically setup the database for you
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?&demo-title=auto-trader&demo-url=https%3A%2F%2Fvercel-marketplace-neon.vercel.app%2F&from=templates&products=%255B%257B%2522type%2522%253A%2522integration%2522%252C%2522protocol%2522%253A%2522storage%2522%252C%2522productSlug%2522%253A%2522neon%2522%252C%2522integrationSlug%2522%253A%2522neon%2522%257D%255D&project-name=auto-trader&repository-name=auto-trader&repository-url=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader&skippable-integrations=1&teamSlug=surgecodes-projects&env=BITTE_API_KEY,ACCOUNT_ID,NEAR_PK,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20the%20trading%20dashboard&envLink=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader%23environment-setup)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?&demo-title=auto-trader&demo-url=https%3A%2F%2Fvercel-marketplace-neon.vercel.app%2F&from=templates&products=%255B%257B%2522type%2522%253A%2522integration%2522%252C%2522protocol%2522%253A%2522storage%2522%252C%2522productSlug%2522%253A%2522neon%2522%252C%2522integrationSlug%2522%253A%2522neon%2522%257D%255D&project-name=auto-trader&repository-name=auto-trader&repository-url=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader&skippable-integrations=1&teamSlug=surgecodes-projects&env=BITTE_API_KEY,NEXT_PUBLIC_ACCOUNT_ID,NEAR_PK,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20the%20trading%20dashboard&envLink=https%3A%2F%2Fgithub.com%2FSurgeCode%2Fauto-trader%23environment-setup)
 
 **No manual DB setup. Just click and go.**
 
@@ -19,7 +19,7 @@ You'll need these 4 environment variables:
 ```bash
 
 BITTE_API_KEY=your_bitte_api_key_here # Bitte AI API Key - Get from https://bitte.ai
-ACCOUNT_ID=your-account.near # Create a near account https://wallet.intear.tech/
+NEXT_PUBLIC_ACCOUNT_ID=your-account.near # Create a near account https://wallet.intear.tech/
 NEAR_PK=your_near_private_key_here # Export your private key from wallet settings
 CRON_SECRET=your_random_secret_string_here # Create a random secret so that only you can call your agent
 ```

@@ -1,197 +1,217 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { Token, CurrentPosition, PositionWithPnL, ToolResult } from "./types"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import type { PortfolioSnapshotData } from "@/lib/memory";
+import type { AgentContext, QuoteToolResult, Token } from "./types";
 
-export const INTENTS_CONTRACT_ID = 'intents.near'
-export const TGas = 1000000000000
-export const NEAR_RPC_URL = 'https://free.rpc.fastnear.com'
-export const BITTE_API_URL = 'https://ai-runtime-446257178793.europe-west1.run.app/chat'
-export const MARKET_API_URL = 'https://trading-agent-kappa.vercel.app/api/tools/market-overview'
-export const MARKET_SYMBOLS = 'BTCUSDT,ETHUSDT,BNBUSDT,SOLUSDT,NEARUSDT,ARBUSDT,SUIUSDT,PEPEUSDT,WIFUSDT'
-export const BALANCE_UPDATE_DELAY = 20000
+const NEXT_PUBLIC_ACCOUNT_ID = process.env.NEXT_PUBLIC_ACCOUNT_ID;
+if (!NEXT_PUBLIC_ACCOUNT_ID) {
+	throw new Error("NEXT_PUBLIC_ACCOUNT_ID is not set");
+}
+
+export const NEAR_ACCOUNT_ID = NEXT_PUBLIC_ACCOUNT_ID;
+
+export const AGENT_ID = "trading-agent-kappa.vercel.app";
+
+export const INTENTS_CONTRACT_ID = "intents.near";
+export const TGas = 1000000000000;
+export const NEAR_RPC_URL = "https://free.rpc.fastnear.com";
+export const BITTE_CHAT_API_URL = "http://localhost:8080/chat";
+// https://ai-runtime-446257178793.europe-west1.run.app/chat
+export const MARKET_API_URL = `https://${AGENT_ID}/api/tools/market-overview`;
+export const MARKET_SYMBOLS =
+	"BTCUSDT,ETHUSDT,BNBUSDT,SOLUSDT,NEARUSDT,ARBUSDT,SUIUSDT,PEPEUSDT,WIFUSDT";
+export const BALANCE_UPDATE_DELAY = 20000;
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+	return twMerge(clsx(inputs));
 }
 
 export const MARKET_SYMBOL_MAP = {
-  'BTC': 'BTCUSDT',
-  'ETH': 'ETHUSDT',
-  'SOL': 'SOLUSDT',
-  'SUI': 'SUIUSDT',
-  'ARB': 'ARBUSDT',
-  'wNEAR': 'NEARUSDT',
-  'BNB': 'BNBUSDT',
-  'OP': 'OPUSDT',
-  'AVAX': 'AVAXUSDT',
-  'POL': 'POLUSDT',
-  'ASTER': 'ASTERUSDT',
-}
+	BTC: "BTCUSDT",
+	ETH: "ETHUSDT",
+	SOL: "SOLUSDT",
+	SUI: "SUIUSDT",
+	ARB: "ARBUSDT",
+	wNEAR: "NEARUSDT",
+	BNB: "BNBUSDT",
+	OP: "OPUSDT",
+	AVAX: "AVAXUSDT",
+	POL: "POLUSDT",
+	ASTER: "ASTERUSDT",
+};
 
 export const TOKEN_LIST: Token[] = [
-  {
-    "assetId": "nep141:wrap.near",
-    "decimals": 24,
-    "blockchain": "near",
-    "symbol": "wNEAR",
-    "contractAddress": "wrap.near"
-  },
-  {
-    "assetId": "nep141:eth.omft.near",
-    "decimals": 18,
-    "blockchain": "eth",
-    "symbol": "ETH",
-  },
-  {
-    "assetId": "nep141:sui.omft.near",
-    "decimals": 9,
-    "blockchain": "sui",
-    "symbol": "SUI",
-  },
-  {
-    "assetId": "nep141:btc.omft.near",
-    "decimals": 8,
-    "blockchain": "btc",
-    "symbol": "BTC",
-  },
-  {
-    "assetId": "nep141:sol.omft.near",
-    "decimals": 9,
-    "blockchain": "sol",
-    "symbol": "SOL",
-  },
-  {
-    "assetId": "nep141:arb-0x912ce59144191c1204e64559fe8253a0e49e6548.omft.near",
-    "decimals": 18,
-    "blockchain": "arb",
-    "symbol": "ARB",
-    "contractAddress": "0x912ce59144191c1204e64559fe8253a0e49e6548"
-  },
-  {
-    "assetId": "nep141:base.omft.near",
-    "decimals": 18,
-    "blockchain": "base",
-    "symbol": "ETH",
-    "price": 3649.37,
-    "priceUpdatedAt": "2025-07-24T11:27:05.100Z"
-  },
-  {
-    "assetId": "nep245:v2_1.omni.hot.tg:43114_11111111111111111111",
-    "decimals": 18,
-    "blockchain": "avax",
-    "symbol": "AVAX",
-    "price": 34.31,
-    "priceUpdatedAt": "2025-09-23T13:26:31.568Z"
-    },
-  {
-    "assetId": "nep141:base-0x532f27101965dd16442e59d40670faf5ebb142e4.omft.near",
-    "decimals": 18,
-    "blockchain": "base",
-    "symbol": "BRETT",
-    "contractAddress": "0x532f27101965dd16442e59d40670faf5ebb142e4"
-  },
-  {
-    "assetId": "nep141:arb.omft.near",
-    "decimals": 18,
-    "blockchain": "arb",
-    "symbol": "ETH",
-  },
-  {
-    "assetId": "nep141:eth-0x6982508145454ce325ddbe47a25d4ec3d2311933.omft.near",
-    "decimals": 18,
-    "blockchain": "eth",
-    "symbol": "PEPE",
-    "contractAddress": "0x6982508145454ce325ddbe47a25d4ec3d2311933"
-  },
-  {
-    "assetId": "nep141:nbtc.bridge.near",
-    "decimals": 8,
-    "blockchain": "near",
-    "symbol": "BTC",
-    "contractAddress": "nbtc.bridge.near"
-  },
-  {
-    "assetId": "nep245:v2_1.omni.hot.tg:10_11111111111111111111",
-    "decimals": 18,
-    "blockchain": "op",
-    "symbol": "ETH",
-  },
-  {
-    "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
-    "decimals": 6,
-    "blockchain": "near",
-    "symbol": "USDC",
-    "contractAddress": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
-    },
-    {
-      "assetId": "nep245:v2_1.omni.hot.tg:56_11111111111111111111",
-      "decimals": 18,
-      "blockchain": "bsc",
-      "symbol": "BNB",
-      },
-      {
-      "assetId": "nep245:v2_1.omni.hot.tg:56_12zbnsg6xndDVj25QyL82YMPudb",
-      "decimals": 18,
-      "blockchain": "bsc",
-      "symbol": "ASTER",
-      "contractAddress": "0x000ae314e2a2172a039b26378814c252734f556a"
-      },
-      {
-      "assetId": "nep245:v2_1.omni.hot.tg:137_11111111111111111111",
-      "decimals": 18,
-      "blockchain": "pol",
-      "symbol": "POL",
-      },
-]
+	{
+		assetId: "nep141:wrap.near",
+		decimals: 24,
+		blockchain: "near",
+		symbol: "wNEAR",
+		contractAddress: "wrap.near",
+	},
+	{
+		assetId: "nep141:eth.omft.near",
+		decimals: 18,
+		blockchain: "eth",
+		symbol: "ETH",
+	},
+	{
+		assetId: "nep141:sui.omft.near",
+		decimals: 9,
+		blockchain: "sui",
+		symbol: "SUI",
+	},
+	{
+		assetId: "nep141:btc.omft.near",
+		decimals: 8,
+		blockchain: "btc",
+		symbol: "BTC",
+	},
+	{
+		assetId: "nep141:sol.omft.near",
+		decimals: 9,
+		blockchain: "sol",
+		symbol: "SOL",
+	},
+	{
+		assetId: "nep141:arb-0x912ce59144191c1204e64559fe8253a0e49e6548.omft.near",
+		decimals: 18,
+		blockchain: "arb",
+		symbol: "ARB",
+		contractAddress: "0x912ce59144191c1204e64559fe8253a0e49e6548",
+	},
+	{
+		assetId: "nep141:base.omft.near",
+		decimals: 18,
+		blockchain: "base",
+		symbol: "ETH",
+		price: 3649.37,
+		priceUpdatedAt: "2025-07-24T11:27:05.100Z",
+	},
+	{
+		assetId: "nep245:v2_1.omni.hot.tg:43114_11111111111111111111",
+		decimals: 18,
+		blockchain: "avax",
+		symbol: "AVAX",
+		price: 34.31,
+		priceUpdatedAt: "2025-09-23T13:26:31.568Z",
+	},
+	{
+		assetId: "nep141:base-0x532f27101965dd16442e59d40670faf5ebb142e4.omft.near",
+		decimals: 18,
+		blockchain: "base",
+		symbol: "BRETT",
+		contractAddress: "0x532f27101965dd16442e59d40670faf5ebb142e4",
+	},
+	{
+		assetId: "nep141:arb.omft.near",
+		decimals: 18,
+		blockchain: "arb",
+		symbol: "ETH",
+	},
+	{
+		assetId: "nep141:eth-0x6982508145454ce325ddbe47a25d4ec3d2311933.omft.near",
+		decimals: 18,
+		blockchain: "eth",
+		symbol: "PEPE",
+		contractAddress: "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+	},
+	{
+		assetId: "nep141:nbtc.bridge.near",
+		decimals: 8,
+		blockchain: "near",
+		symbol: "BTC",
+		contractAddress: "nbtc.bridge.near",
+	},
+	{
+		assetId: "nep245:v2_1.omni.hot.tg:10_11111111111111111111",
+		decimals: 18,
+		blockchain: "op",
+		symbol: "ETH",
+	},
+	{
+		assetId:
+			"nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+		decimals: 6,
+		blockchain: "near",
+		symbol: "USDC",
+		contractAddress:
+			"17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+	},
+	{
+		assetId: "nep245:v2_1.omni.hot.tg:56_11111111111111111111",
+		decimals: 18,
+		blockchain: "bsc",
+		symbol: "BNB",
+	},
+	{
+		assetId: "nep245:v2_1.omni.hot.tg:56_12zbnsg6xndDVj25QyL82YMPudb",
+		decimals: 18,
+		blockchain: "bsc",
+		symbol: "ASTER",
+		contractAddress: "0x000ae314e2a2172a039b26378814c252734f556a",
+	},
+	{
+		assetId: "nep245:v2_1.omni.hot.tg:137_11111111111111111111",
+		decimals: 18,
+		blockchain: "pol",
+		symbol: "POL",
+	},
+];
 export function logTradingAgentData({
-  totalUsd,
-  tradingValue,
-  usdcValue,
-  pnlUsd,
-  pnlPercent,
-  currentPositions,
-  positionsWithPnl,
-  content,
-  quote
+	context,
+	content,
+	pnlUsd,
+	quoteResult,
 }: {
-  totalUsd: number
-  tradingValue: number
-  usdcValue: number
-  pnlUsd: number
-  pnlPercent: number
-  currentPositions: CurrentPosition[]
-  positionsWithPnl: PositionWithPnL[]
-  content: string
-  quote: ToolResult | undefined
+	context: AgentContext;
+	content: string;
+	pnlUsd: number;
+	quoteResult?: QuoteToolResult | undefined;
 }) {
-  console.log("=== TRADING AGENT DATA ===")
-  console.log("TOTAL PORTFOLIO VALUE:", totalUsd, `(Trading: $${tradingValue.toFixed(2)} + USDC: $${usdcValue.toFixed(2)})`)
-  console.log("TRADING PNL:", pnlUsd, "PERCENT:", pnlPercent)
-  console.log("CURRENT POSITIONS:", currentPositions)
-  console.log("POSITIONS WITH PNL:", positionsWithPnl)
-  console.log("=== REASONING ===")
-  console.log("tradeResult", content, quote)
-  console.log("==========================")
+	const {
+		totalUsd,
+		tradingValue,
+		usdcValue,
+		pnlPercent,
+		currentPositions,
+		positionsWithPnl,
+	} = context;
+
+	console.log("=== TRADING AGENT DATA ===");
+	console.log(
+		"TOTAL PORTFOLIO VALUE:",
+		totalUsd,
+		`(Trading: $${tradingValue.toFixed(2)} + USDC: $${usdcValue.toFixed(2)})`,
+	);
+	console.log("TRADING PNL:", pnlUsd, "PERCENT:", pnlPercent);
+	console.log("CURRENT POSITIONS:", currentPositions);
+	console.log("POSITIONS WITH PNL:", positionsWithPnl);
+	console.log("=== REASONING ===");
+	console.log("tradeResult", content, quoteResult);
+	console.log("==========================");
 }
 
+export const roundToTwo = (value: number) => Math.round(value * 100) / 100;
 
-export const roundToTwo = (value: number) => Math.round(value * 100) / 100
+export const normalizeAsset = (asset: string) =>
+	asset === "wNEAR" ? "NEAR" : asset;
 
-export const normalizeAsset = (asset: string) => asset === 'wNEAR' ? 'NEAR' : asset
+export const parseAiReasoning = (
+	snapshotData: PortfolioSnapshotData,
+	fallback = "Agent processing market data...",
+) => {
+	if (snapshotData?.reasoning) {
+		return snapshotData.reasoning;
+	}
 
-export const parseAiReasoning = (snapshotData: any, fallback = "Agent processing market data...") => {
-  if (snapshotData?.reasoning) {
-    return snapshotData.reasoning
-  }
-  
-  if (snapshotData?.raw_ai_response) {
-    try {
-      const parsed = JSON.parse(snapshotData.raw_ai_response)
-      return parsed.reasoning || parsed.action || "Agent decision recorded"
-    } catch {
-      return snapshotData.raw_ai_response.substring(0, 200) + "..."
-    }
-  }
-  
-  return fallback
-}
+	if (snapshotData?.raw_ai_response) {
+		try {
+			const parsed = JSON.parse(snapshotData.raw_ai_response);
+			return parsed.reasoning || parsed.action || "Agent decision recorded";
+		} catch {
+			return `${snapshotData.raw_ai_response.substring(0, 200)}...`;
+		}
+	}
+
+	return fallback;
+};
