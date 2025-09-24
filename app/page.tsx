@@ -188,7 +188,7 @@ export default function Page() {
 				<div className="lg:col-span-2">
 					<StatsChart data={data.statsChart} totalValue={data.totalValue} />
 				</div>
-				<AssetDistributionChart assets={data.assetDistribution} />
+				<AssetDistributionChart assets={data.assetDistribution as { symbol: string; value: number; percentage: number; change: number; }[]} />
 			</div>
 
 			{/* Bottom Section: Realized P&L and Agent Terminal */}

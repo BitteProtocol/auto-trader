@@ -57,3 +57,56 @@ export function buildTransactionPayload(quote: Quote) {
 		],
 	};
 }
+
+const USDC_CONTRACT = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+const USDC_TOKEN_ID = "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+
+export async function getUSDCBalance(account: Account): Promise<bigint> {
+	try {
+		const result = await account.viewFunction({
+			contractId: USDC_CONTRACT,
+			methodName: "ft_balance_of",
+			args: { account_id: account.accountId },
+		});
+		return BigInt(result as string);
+	} catch (error) {
+		console.warn("Failed to fetch USDC balance:", error);
+		return BigInt(0);
+	}
+}
+
+export async function depositUSDC(account: Account, amount: bigint) {
+	const result = await account.signAndSendTransaction({
+		receiverId: USDC_CONTRACT,
+		actions: [
+			actionCreators.functionCall(
+				"ft_transfer_call",
+				{
+					receiver_id: INTENTS_CONTRACT_ID,
+					amount: amount.toString(),
+					msg: account.accountId,
+				},
+				BigInt(TGas * 50),
+				BigInt(1),
+			),
+		],
+	});
+
+	const hasSuccess = result.receipts_outcome.some(receipt => 
+		receipt.outcome.logs.some(log => 
+			log.includes('mt_mint') && log.includes(account.accountId)
+		)
+	);
+
+	const hasRefund = result.receipts_outcome.some(receipt =>
+		receipt.outcome.logs.some(log =>
+			log.includes('ft_transfer') && log.includes('"memo":"refund"')
+		)
+	);
+
+	if (hasRefund || !hasSuccess) {
+		throw new Error('Deposit failed - transaction was refunded');
+	}
+
+	return result;
+}
