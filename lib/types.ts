@@ -1,4 +1,3 @@
-import type { ToolResult } from "ai";
 
 export interface Token {
 	assetId: string;
@@ -9,6 +8,18 @@ export interface Token {
 	price?: number;
 	priceUpdatedAt?: string;
 }
+
+export interface ToolResult {
+	toolCallId: string
+	result: {
+	  data: {
+		success: boolean
+		data: {
+		  quote?: Quote
+		}
+	  }
+	}
+  }
 
 export interface TokenBalance {
 	assetId: string;
@@ -68,16 +79,6 @@ export interface Quote {
 	timestamp: string;
 }
 
-type ToolResultData = {
-	data: {
-		success: boolean;
-		data: {
-			quote?: Quote;
-		};
-	};
-};
-
-export type QuoteToolResult = ToolResult<"quote", unknown, ToolResultData>;
 
 export interface AgentContext {
 	totalUsd: number;

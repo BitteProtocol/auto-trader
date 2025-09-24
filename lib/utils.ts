@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { PortfolioSnapshotData } from "@/lib/memory";
-import type { AgentContext, QuoteToolResult, Token } from "./types";
+import type { AgentContext, Token, ToolResult } from "./types";
 
 const NEXT_PUBLIC_ACCOUNT_ID = process.env.NEXT_PUBLIC_ACCOUNT_ID;
 if (!NEXT_PUBLIC_ACCOUNT_ID) {
@@ -167,7 +167,7 @@ export function logTradingAgentData({
   context: AgentContext;
   content: string;
   pnlUsd: number;
-  quoteResult?: QuoteToolResult | undefined;
+  quoteResult?: ToolResult | undefined;
 }) {
   const {
     totalUsd,
