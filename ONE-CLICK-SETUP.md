@@ -33,11 +33,11 @@ This guide will get you from zero to a live AI trading dashboard in **under 5 mi
 
 1. **Click this magic button:**
 
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard&env=BITTE_API_KEY,ACCOUNT_ID,NEAR_PK,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20the%20trading%20dashboard&envLink=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard%23environment-setup&project-name=crypto-trading-dashboard&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard&env=BITTE_API_KEY,NEXT_PUBLIC_ACCOUNT_ID,NEAR_PK,CRON_SECRET&envDescription=Required%20environment%20variables%20for%20the%20trading%20dashboard&envLink=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcrypto-dashboard%23environment-setup&project-name=crypto-trading-dashboard&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
 
 2. **Fill in the 4 fields:**
    - `BITTE_API_KEY`: Your Bitte AI key
-   - `ACCOUNT_ID`: Your NEAR account ID (yourname.near)
+   - `NEXT_PUBLIC_ACCOUNT_ID`: Your NEAR account ID (yourname.near)
    - `NEAR_PK`: Your NEAR private key
    - `CRON_SECRET`: Your random string
 
