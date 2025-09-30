@@ -1,6 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { PortfolioSnapshotData } from "@/lib/memory";
 import type { AgentContext, Token, ToolResult } from "./types";
 
 const NEXT_PUBLIC_ACCOUNT_ID = process.env.NEXT_PUBLIC_ACCOUNT_ID;
@@ -17,7 +16,7 @@ export const TGas = 1000000000000;
 export const NEAR_RPC_URL = "https://free.rpc.fastnear.com";
 export const BITTE_CHAT_API_URL =
   "https://ai-runtime-446257178793.europe-west1.run.app/chat";
-// "http://localhost:8080/chat";
+
 export const MARKET_API_URL = `https://${AGENT_ID}/api/tools/market-overview`;
 export const MARKET_SYMBOLS =
   "BTCUSDT,ETHUSDT,BNBUSDT,SOLUSDT,NEARUSDT,ARBUSDT,SUIUSDT,PEPEUSDT,WIFUSDT";
@@ -158,6 +157,7 @@ export const TOKEN_LIST: Token[] = [
     symbol: "POL",
   },
 ];
+
 export function logTradingAgentData({
   context,
   content,
@@ -197,22 +197,3 @@ export const roundToTwo = (value: number) => Math.round(value * 100) / 100;
 export const normalizeAsset = (asset: string) =>
   asset === "wNEAR" ? "NEAR" : asset;
 
-export const parseAiReasoning = (
-  snapshotData: PortfolioSnapshotData,
-  fallback = "Agent processing market data..."
-) => {
-  if (snapshotData?.reasoning) {
-    return snapshotData.reasoning;
-  }
-
-  if (snapshotData?.raw_ai_response) {
-    try {
-      const parsed = JSON.parse(snapshotData.raw_ai_response);
-      return parsed.reasoning || parsed.action || "Agent decision recorded";
-    } catch {
-      return `${snapshotData.raw_ai_response.substring(0, 200)}...`;
-    }
-  }
-
-  return fallback;
-};

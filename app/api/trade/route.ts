@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BALANCE_UPDATE_DELAY, logTradingAgentData } from '@/lib/utils'
-import { ensureDatabaseSetup, storeActualTrade, storePortfolioSnapshot } from '@/lib/memory'
+import { storeTrade, storePortfolioSnapshot } from '@/lib/api-helpers'
 import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
 import { buildAgentContext } from '@/lib/agent-context'
 import { callAgent } from '@bitte-ai/agent-sdk'
@@ -20,15 +20,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'accountId is required' }, { status: 400 })
     }
     
-    await ensureDatabaseSetup()
-    
     const agentId = 'trading-agent-kappa.vercel.app'
 
     const account = await initializeNearAccount(accountId)
     
     const context = await buildAgentContext(accountId, account)
     
-    const { content, toolResults } = await callAgent(accountId, context.systemPrompt, agentId)
+    const { content, toolResults } = await callAgent(accountId, context.systemPrompt.concat('FOR DEVELOPMENT PURPOSES ONLY, GET A QUOTE FOR SOL WITH 0.5$ OF USDC'), agentId)
     
     const quoteResult = (toolResults as ToolResult[]).find(callResult => 
       callResult.result?.data?.data?.quote
@@ -46,14 +44,14 @@ export async function GET(request: NextRequest) {
       const tx = await account.signAndSendTransaction(buildTransactionPayload(quote))
       console.log('Trade executed:', tx.transaction.hash)
       await new Promise(resolve => setTimeout(resolve, BALANCE_UPDATE_DELAY))
-      await storeActualTrade(accountId, quote)
+      await storeTrade(quote)
       
       const updatedContext = await buildAgentContext(accountId, account)
       
-      await storePortfolioSnapshot(accountId, updatedContext.positionsWithPnl, updatedContext.totalUsd, context.totalUsd, content)
+      await storePortfolioSnapshot(updatedContext.positionsWithPnl, updatedContext.totalUsd, context.totalUsd, content)
     } 
     else {
-      await storePortfolioSnapshot(accountId, context.positionsWithPnl, context.totalUsd, context.totalUsd, content)
+      await storePortfolioSnapshot(context.positionsWithPnl, context.totalUsd, context.totalUsd, content)
     }
     return NextResponse.json({ content })
     

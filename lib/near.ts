@@ -59,7 +59,6 @@ export function buildTransactionPayload(quote: Quote) {
 }
 
 const USDC_CONTRACT = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
-const USDC_TOKEN_ID = "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
 
 export async function getUSDCBalance(account: Account): Promise<bigint> {
 	try {

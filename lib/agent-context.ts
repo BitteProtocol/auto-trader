@@ -4,7 +4,7 @@ import {
   fetchMarketPrices,
   fetchPortfolioBalances,
 } from "./market";
-import { getCurrentPositions } from "./memory";
+import { getCurrentPositions } from "./api-helpers";
 import type { AgentContext, PositionWithPnL } from "./types";
 import { TOKEN_LIST } from "./utils";
 
