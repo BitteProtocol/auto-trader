@@ -1,5 +1,4 @@
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
 import type { AgentContext, Token, ToolResult } from "./types";
 
 const NEXT_PUBLIC_ACCOUNT_ID = process.env.NEXT_PUBLIC_ACCOUNT_ID;
@@ -23,7 +22,7 @@ export const MARKET_SYMBOLS =
 export const BALANCE_UPDATE_DELAY = 20000;
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return clsx(inputs);
 }
 
 export const MARKET_SYMBOL_MAP = {
