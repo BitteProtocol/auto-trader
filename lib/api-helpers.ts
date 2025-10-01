@@ -1,7 +1,7 @@
 import { Quote, PositionWithPnL, CurrentPosition } from './types';
 import { TOKEN_LIST } from './utils';
 
-const API_BASE_URL = 'http://localhost:3000'
+const API_BASE_URL = 'https://bitte-autonomous-agent-dashboard.vercel.app'
 
 interface ApiCallOptions {
   method: 'POST' | 'GET';
@@ -87,6 +87,7 @@ export async function getCurrentPositions(accountId: string): Promise<CurrentPos
     return response;
   } catch (error) {
     console.error('Error fetching current positions via API:', error);
-    throw error;
+    console.log('Returning empty positions array (likely agent just started)');
+    return [];
   }
 }
