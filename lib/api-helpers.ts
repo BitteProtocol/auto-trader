@@ -10,8 +10,14 @@ interface ApiCallOptions {
 }
 
 async function makeApiCall(endpoint: string, options: ApiCallOptions) {
+  const bitteKey = process.env.BITTE_API_KEY;
+  if (!bitteKey) {
+    throw new Error('BITTE_API_KEY is not set');
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Authorization': `Bearer ${bitteKey}`,
     ...options.headers
   };
 
