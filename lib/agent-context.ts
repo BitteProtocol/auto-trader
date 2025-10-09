@@ -10,10 +10,19 @@ import { TOKEN_LIST } from "./utils";
 import { DEFAULT_STRATEGY } from "./strategies";
 import type { StrategyConfig } from "./strategies";
 
+let envStrategy: StrategyConfig | undefined;
+if (process.env.STRATEGY) {
+  try {
+    envStrategy = JSON.parse(process.env.STRATEGY) as StrategyConfig;
+    console.log("Loaded custom strategy from STRATEGY environment variable");
+  } catch (error) {
+    console.warn("Failed to parse STRATEGY environment variable, using default:", error);
+  }
+}
+
 export async function buildAgentContext(
 	accountId: string,
 	account: Account,
-	strategyConfig?: StrategyConfig,
 ): Promise<AgentContext> {
 	const [portfolio, { marketPrices, marketOverviewData }, currentPositions] =
 		await Promise.all([
@@ -54,7 +63,6 @@ export async function buildAgentContext(
 		pnlPercent,
 		positionsWithPnl,
 		marketOverviewData,
-		strategyConfig,
 	);
 
 	return {
@@ -95,9 +103,8 @@ function generateSystemPrompt(
 	pnlPercent: number,
 	positionsWithPnl: PositionWithPnL[],
 	marketOverviewData: string,
-	strategyConfig?: StrategyConfig,
 ): string {
-	const strategy = strategyConfig || DEFAULT_STRATEGY;
+	const strategy = envStrategy || DEFAULT_STRATEGY;
 	return `
 
 === PORTFOLIO DATA ===
