@@ -7,6 +7,18 @@ import {
 import { getCurrentPositions } from "./api-helpers";
 import type { AgentContext, PositionWithPnL } from "./types";
 import { TOKEN_LIST } from "./utils";
+import { DEFAULT_STRATEGY } from "./strategies";
+import type { StrategyConfig } from "./strategies";
+
+let envStrategy: StrategyConfig | undefined;
+if (process.env.STRATEGY) {
+  try {
+    envStrategy = JSON.parse(process.env.STRATEGY) as StrategyConfig;
+    console.log("Loaded custom strategy from STRATEGY environment variable");
+  } catch (error) {
+    console.warn("Failed to parse STRATEGY environment variable, using default:", error);
+  }
+}
 
 export async function buildAgentContext(
 	accountId: string,
@@ -92,6 +104,7 @@ function generateSystemPrompt(
 	positionsWithPnl: PositionWithPnL[],
 	marketOverviewData: string,
 ): string {
+	const strategy = envStrategy || DEFAULT_STRATEGY;
 	return `
 
 === PORTFOLIO DATA ===
@@ -113,38 +126,36 @@ ${marketOverviewData}
 === NEP141 ASSET IDS ===
 ${TOKEN_LIST.map((token) => `${token.symbol}: "${token.assetId}"`).join("\n")}
 
-=== WALL STREET STRATEGY: 3-STEP DECISION PROCESS ===
+=== TRADING STRATEGY: 3-STEP DECISION PROCESS ===
+${strategy.overview}
 
 STEP 1: PORTFOLIO RISK MANAGEMENT
-- Risk targets: SELL at +2% profit OR -1.5% loss (realistic for crypto volatility)
-- Data-driven exits: Use klines tool if position showing weakness for confirmation
-- Position health: Don't try to close positions with raw balance below 1000
-- Smart exits: Close losing positions faster than winners (cut losses, let profits run)
+${strategy.step1Rules}
+- Profit target: +${strategy.riskParams.profitTarget}%
+- Stop loss: ${strategy.riskParams.stopLoss}%
+- Don't close positions with raw balance below 1000
 - If exit criteria met → IMMEDIATELY call QUOTE TOOL to sell for USDC
 
 STEP 2: MARKET OPPORTUNITY ANALYSIS (Only if no positions closed in Step 1)
-- Screen for high-probability setups using available data:
-  • Price momentum >3% with volume confirmation
-  • Fear/Greed extremes (use fearGreed tool when needed)
-  • Order book imbalances (use orderBook tool for liquidity check)
+${strategy.step2Rules}
+- Use available tools: klines, fearGreed, orderBook, aggregateTrades
 - Tool usage strategy: Use 1 analysis tool only if market data insufficient
-- Quality filter: Only trade clear directional moves, skip choppy action
 
-STEP 3: POSITION SIZING & EXECUTION  
-- Dynamic sizing based on portfolio: 5-15% per trade (scales with account)
-- Size calculation: Min($10, Max($5, USDC_balance * 0.10))
-- Account for slippage: Minimum $8 positions to overcome trading costs
-- Max positions: 3-4 open at once to maintain focus
-- Daily limit: Up to 10 trades if opportunities exist, 0 trades if no setups
+STEP 3: POSITION SIZING & EXECUTION
+${strategy.step3Rules}
+- Position sizing: ${strategy.riskParams.positionSize}
+- Max positions: ${strategy.riskParams.maxPositions} open at once
+- Trade when opportunities exist, wait for quality setups
+
 
 === CRITICAL EXECUTION RULES ===
 • ALL trading through USDC base pair: BUY token with USDC / SELL token for USDC
 • Use EXACT RAW BALANCE amounts from portfolio data above (the RAW: values)
-• Position sizing: $5-15% of USDC balance (adaptive to account size)
+• Position sizing: ${strategy.riskParams.positionSize} of USDC balance (adaptive to account size)
 • QUOTE TOOL USAGE: Always use RAW balance amounts, never formatted amounts
 • QUOTE TOOL is MANDATORY for all trades - no exceptions
 • HOLD FLEXIBILITY: No arbitrary time limits, exit based on data and targets
-• TRADING FREQUENCY: Up to around 10 trades per day if opportunities exist, otherwise wait
+• TRADING FREQUENCY: Trade when opportunities exist, otherwise wait for quality setups
 • STEP BUDGET: Portfolio check (0 steps) → Analysis (max 2 steps) → Quote (1 step)
 
 === NATURAL TRADING FLOW ===
@@ -178,10 +189,10 @@ QUOTE TOOL RAW BALANCE USAGE:
 
 ADAPTIVE TRADING PRINCIPLES:
 • FLEXIBILITY: No arbitrary hold times, exit when data says exit
-• SCALING: Position size adapts to account size (5-15% of USDC)
-• FREQUENCY: Up to 10 trades/day if opportunities exist, otherwise wait
+• SCALING: Position size adapts to account size (${strategy.riskParams.positionSize} of USDC)
+• FREQUENCY: Trade when opportunities exist, otherwise wait for quality setups
 • DATA PRIORITY: Use tools to confirm setups, not to find them
-• FOCUS: Max 3-4 open positions to maintain quality management
+• FOCUS: Max ${strategy.riskParams.maxPositions} open positions to maintain quality management
 
 🚫 AVOID: Over-analysis paralysis, forcing trades, ignoring position limits
 ✅ EXECUTE: Clear setups, proper sizing, data-confirmed exits, patient waiting`;
