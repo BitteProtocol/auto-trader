@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     
     const context = await buildAgentContext(accountId, account)
     
-    const { content, toolResults } = await callAgent(accountId, context.systemPrompt.concat('FOR DEVELOPMENT PURPOSES ONLY, GET A QUOTE FOR SOL WITH 0.5$ OF USDC'), agentId)
+    const { content, toolResults } = await callAgent(accountId, context.systemPrompt, agentId)
     
     const quoteResult = (toolResults as ToolResult[]).find(callResult => 
       callResult.result?.data?.data?.quote
