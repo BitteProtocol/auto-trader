@@ -12,28 +12,29 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const amount = searchParams.get('amount') ? Number(searchParams.get('amount')) : undefined
+    const depositStr = searchParams.get('amount');
+    if (!depositStr) {
+      return NextResponse.json({ error: 'unspecified amount' }, { status: 400 })
+    }
     const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID
     if (!accountId) {
       return NextResponse.json({ error: 'accountId is not configured' }, { status: 500 })
     }
 
-    const depositAmount = amount || 10
+    const depositAmount = BigInt(depositStr);
     
     const account = await initializeNearAccount(accountId)
     
     const usdcBalance = await getUSDCBalance(account)
-    const usdcBalanceDecimal = Number(usdcBalance) / 1_000_000
+    // const usdcBalanceDecimal = Number(usdcBalance) / 1_000_000
 
-    if (usdcBalanceDecimal < depositAmount) {
+    if (usdcBalance < depositAmount) {
       return NextResponse.json({ 
-        error: `Insufficient USDC balance (required: $${depositAmount}, available: $${usdcBalanceDecimal.toFixed(2)})` 
+        error: `Insufficient USDC balance (required: $${depositAmount}, available: $${usdcBalance})` 
       }, { status: 400 })
     }
 
-    const amountToDeposit = BigInt(depositAmount * 1_000_000)
-    
-    const tx = await depositUSDC(account, amountToDeposit)
+    const tx = await depositUSDC(account, depositAmount)
     
     await new Promise(resolve => setTimeout(resolve, BALANCE_UPDATE_DELAY))
 
