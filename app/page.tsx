@@ -8,6 +8,7 @@ export default function Page() {
 
   const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID;
   const baseUrl = "https://bitte-autonomous-agent-dashboard.vercel.app";
+  const DEPLOYMENT_URL = process.env.NEXT_PUBLIC_VERCEL_URL || '';
 
   useEffect(() => {
     if (!accountId) {
@@ -47,7 +48,7 @@ export default function Page() {
             <p className="description">
               You've completed the deployment step. Now you need to register your agent.
             </p>
-            <a href={`${baseUrl}/deploy-url`} className="button">
+            <a href={`${baseUrl}/deploy-url?url=${encodeURIComponent(DEPLOYMENT_URL)}`} className="button">
               Register Agent
             </a>
           </>
