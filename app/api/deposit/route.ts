@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BALANCE_UPDATE_DELAY } from '@/lib/utils'
 import { initializeNearAccount, depositUSDC, getUSDCBalance } from '@/lib/near'
+import { formatUnits } from '@/lib/viem';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,6 @@ export async function GET(request: NextRequest) {
     const account = await initializeNearAccount(accountId)
     
     const usdcBalance = await getUSDCBalance(account)
-    // const usdcBalanceDecimal = Number(usdcBalance) / 1_000_000
 
     if (usdcBalance < depositAmount) {
       return NextResponse.json({ 
@@ -37,11 +37,13 @@ export async function GET(request: NextRequest) {
     const tx = await depositUSDC(account, depositAmount)
     
     await new Promise(resolve => setTimeout(resolve, BALANCE_UPDATE_DELAY))
+    
+    const uiAmount = formatUnits(depositAmount, 6);
 
     return NextResponse.json({ 
-      message: `Successfully deposited $${depositAmount} USDC`,
+      message: `Successfully deposited $${uiAmount} USDC`,
       transactionHash: tx.transaction.hash,
-      amount: depositAmount 
+      amount: uiAmount
     })
     
   } catch (error) {
