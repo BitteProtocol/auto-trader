@@ -89,12 +89,6 @@ export const TOKEN_LIST: Token[] = [
     decimals: 18,
     blockchain: "avax",
     symbol: "AVAX",
-  {
-    assetId: "nep141:arb.omft.near",
-    decimals: 18,
-    blockchain: "arb",
-    symbol: "ETH",
-  },
   },
   {
     assetId: "nep141:nbtc.bridge.near",
