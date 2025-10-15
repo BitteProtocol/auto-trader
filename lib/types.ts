@@ -19,7 +19,7 @@ export interface ToolResult {
 		}
 	  }
 	}
-  }
+}
 
 export interface TokenBalance {
 	assetId: string;

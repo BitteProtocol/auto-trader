@@ -5,28 +5,19 @@ import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
 import { buildAgentContext } from '@/lib/agent-context'
 import { callAgent } from '@bitte-ai/agent-sdk'
 import { ToolResult } from '@/lib/types'
+import { ACCOUNT_ID } from '@/lib/env'
+import { withCronSecret } from '@/lib/api-auth'
 
-export async function GET(request: NextRequest) {
-  try {
-    if (process.env.CRON_SECRET) {
-      const authHeader = request.headers.get('Authorization')
-      if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-    }
 
-    const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID
-    if (!accountId) {
-      return NextResponse.json({ error: 'accountId is required' }, { status: 400 })
-    }
-    
+async function tradeHandler(): Promise<NextResponse> {
+  try {    
     const agentId = 'trading-agent-kappa.vercel.app'
 
-    const account = await initializeNearAccount(accountId)
+    const account = await initializeNearAccount(ACCOUNT_ID)
     
-    const context = await buildAgentContext(accountId, account)
+    const context = await buildAgentContext(ACCOUNT_ID, account)
     
-    const { content, toolResults } = await callAgent(accountId, context.systemPrompt, agentId)
+    const { content, toolResults } = await callAgent(ACCOUNT_ID, context.systemPrompt, agentId)
     
     const quoteResult = (toolResults as ToolResult[]).find(callResult => 
       callResult.result?.data?.data?.quote
@@ -46,7 +37,7 @@ export async function GET(request: NextRequest) {
       await new Promise(resolve => setTimeout(resolve, BALANCE_UPDATE_DELAY))
       await storeTrade(quote)
       
-      const updatedContext = await buildAgentContext(accountId, account)
+      const updatedContext = await buildAgentContext(ACCOUNT_ID, account)
       
       await storePortfolioSnapshot(updatedContext.positionsWithPnl, updatedContext.totalUsd, context.totalUsd, content)
     } 
@@ -60,3 +51,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to process trading request' }, { status: 500 })
   }
 }
+
+export const GET = withCronSecret(tradeHandler);

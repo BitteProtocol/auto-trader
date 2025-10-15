@@ -1,13 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import type { AgentContext, Token, ToolResult } from "./types";
 
-const NEXT_PUBLIC_ACCOUNT_ID = process.env.NEXT_PUBLIC_ACCOUNT_ID;
-if (!NEXT_PUBLIC_ACCOUNT_ID) {
-  throw new Error("NEXT_PUBLIC_ACCOUNT_ID is not set");
-}
-
-export const NEAR_ACCOUNT_ID = NEXT_PUBLIC_ACCOUNT_ID;
-
 export const AGENT_ID = "trading-agent-kappa.vercel.app";
 
 export const INTENTS_CONTRACT_ID = "intents.near";

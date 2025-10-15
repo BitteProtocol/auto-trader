@@ -9,16 +9,7 @@ import type { AgentContext, PositionWithPnL } from "./types";
 import { TOKEN_LIST } from "./utils";
 import { DEFAULT_STRATEGY } from "./strategies";
 import type { StrategyConfig } from "./strategies";
-
-let envStrategy: StrategyConfig | undefined;
-if (process.env.STRATEGY) {
-  try {
-    envStrategy = JSON.parse(process.env.STRATEGY) as StrategyConfig;
-    console.log("Loaded custom strategy from STRATEGY environment variable");
-  } catch (error) {
-    console.warn("Failed to parse STRATEGY environment variable, using default:", error);
-  }
-}
+import { AGENT_STRATEGY } from "./env";
 
 export async function buildAgentContext(
 	accountId: string,
@@ -104,7 +95,7 @@ function generateSystemPrompt(
 	positionsWithPnl: PositionWithPnL[],
 	marketOverviewData: string,
 ): string {
-	const strategy = envStrategy || DEFAULT_STRATEGY;
+	const strategy = AGENT_STRATEGY;
 	return `
 
 === PORTFOLIO DATA ===

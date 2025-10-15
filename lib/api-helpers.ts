@@ -1,3 +1,4 @@
+import { ACCOUNT_ID, BITTE_API_KEY } from './env';
 import { Quote, PositionWithPnL, CurrentPosition } from './types';
 import { TOKEN_LIST } from './utils';
 
@@ -10,14 +11,9 @@ interface ApiCallOptions {
 }
 
 async function makeApiCall(endpoint: string, options: ApiCallOptions) {
-  const bitteKey = process.env.BITTE_API_KEY;
-  if (!bitteKey) {
-    throw new Error('BITTE_API_KEY is not set');
-  }
-
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${bitteKey}`,
+    'Authorization': `Bearer ${BITTE_API_KEY}`,
     ...options.headers
   };
 
@@ -37,12 +33,7 @@ async function makeApiCall(endpoint: string, options: ApiCallOptions) {
 
 export async function storeTrade(quote: Quote): Promise<void> {
   try {
-    const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID;
-    if (!accountId) {
-      throw new Error('NEXT_PUBLIC_ACCOUNT_ID is not set');
-    }
-    
-    await makeApiCall(`/api/trader/${accountId}/store-trade`, {
+    await makeApiCall(`/api/trader/${ACCOUNT_ID}/store-trade`, {
       method: 'POST',
       body: {
         quote,
@@ -63,12 +54,7 @@ export async function storePortfolioSnapshot(
   aiReasoning?: string
 ): Promise<void> {
   try {
-    const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID;
-    if (!accountId) {
-      throw new Error('NEXT_PUBLIC_ACCOUNT_ID is not set');
-    }
-    
-    await makeApiCall(`/api/trader/${accountId}/store-snapshot`, {
+    await makeApiCall(`/api/trader/${ACCOUNT_ID}/store-snapshot`, {
       method: 'POST',
       body: {
         positions,

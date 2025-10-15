@@ -2,6 +2,7 @@ import { actionCreators } from "@near-js/transactions";
 import { Account, KeyPair, keyStores, Near } from "near-api-js";
 import type { Quote } from "./types";
 import { INTENTS_CONTRACT_ID, NEAR_RPC_URL, TGas } from "./utils";
+import { NEAR_PK } from "./env";
 
 export async function getTokenBalance(
 	account: Account,
@@ -23,10 +24,6 @@ export async function getTokenBalance(
 export async function initializeNearAccount(
 	accountId: string,
 ): Promise<Account> {
-	const NEAR_PK = process.env.NEAR_PK as `ed25519:${string}`;
-	if (!NEAR_PK) {
-		throw new Error("NEAR_PK is not set");
-	}
 	const keyPair = KeyPair.fromString(NEAR_PK);
 	const keyStore = new keyStores.InMemoryKeyStore();
 	keyStore.setKey("mainnet", accountId, keyPair);
