@@ -7,8 +7,6 @@ import {
 import { getCurrentPositions } from "./api-helpers";
 import type { AgentContext, PositionWithPnL } from "./types";
 import { TOKEN_LIST } from "./utils";
-import { DEFAULT_STRATEGY } from "./strategies";
-import type { StrategyConfig } from "./strategies";
 import { AGENT_STRATEGY } from "./env";
 
 export async function buildAgentContext(

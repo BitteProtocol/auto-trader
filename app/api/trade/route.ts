@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { BALANCE_UPDATE_DELAY, logTradingAgentData } from '@/lib/utils'
 import { storeTrade, storePortfolioSnapshot } from '@/lib/api-helpers'
 import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
