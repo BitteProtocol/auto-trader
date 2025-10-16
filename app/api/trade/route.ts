@@ -5,19 +5,20 @@ import { buildTransactionPayload, initializeNearAccount } from "@/lib/near";
 import { buildAgentContext } from "@/lib/agent-context";
 import { callAgent } from "@bitte-ai/agent-sdk";
 import { ToolResult } from "@/lib/types";
-import { ACCOUNT_ID } from "@/lib/env";
 import { withCronSecret } from "@/lib/api-auth";
+import { getEnvVar } from "@/lib/env";
 
 async function tradeHandler(): Promise<NextResponse> {
   try {
+    const accountId = getEnvVar("NEXT_PUBLIC_ACCOUNT_ID");
     const agentId = "trading-agent-kappa.vercel.app";
 
-    const account = await initializeNearAccount(ACCOUNT_ID);
+    const account = await initializeNearAccount(accountId);
 
-    const context = await buildAgentContext(ACCOUNT_ID, account);
+    const context = await buildAgentContext(accountId, account);
 
     const { content, toolResults } = await callAgent(
-      ACCOUNT_ID,
+      accountId,
       context.systemPrompt,
       agentId,
     );
@@ -40,11 +41,12 @@ async function tradeHandler(): Promise<NextResponse> {
       );
       console.log("Trade executed:", tx.transaction.hash);
       await new Promise((resolve) => setTimeout(resolve, BALANCE_UPDATE_DELAY));
-      await storeTrade(quote);
+      await storeTrade(accountId, quote);
 
-      const updatedContext = await buildAgentContext(ACCOUNT_ID, account);
+      const updatedContext = await buildAgentContext(accountId, account);
 
       await storePortfolioSnapshot(
+        accountId,
         updatedContext.positionsWithPnl,
         updatedContext.totalUsd,
         context.totalUsd,
@@ -52,6 +54,7 @@ async function tradeHandler(): Promise<NextResponse> {
       );
     } else {
       await storePortfolioSnapshot(
+        accountId,
         context.positionsWithPnl,
         context.totalUsd,
         context.totalUsd,
