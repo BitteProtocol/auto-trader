@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { BALANCE_UPDATE_DELAY } from "@/lib/utils";
 import { initializeNearAccount, depositUSDC, getUSDCBalance } from "@/lib/near";
 import { formatUnits } from "@/lib/viem";
-import { ACCOUNT_ID } from "@/lib/env";
 import { withCronSecret } from "@/lib/api-auth";
+import { getEnvVar } from "@/lib/env";
 
 async function depositHandler(request: NextRequest) {
   try {
+    const accountId = getEnvVar("NEXT_PUBLIC_ACCOUNT_ID");
     const { searchParams } = new URL(request.url);
     const depositStr = searchParams.get("amount");
     if (!depositStr) {
@@ -18,7 +19,7 @@ async function depositHandler(request: NextRequest) {
 
     const depositAmount = BigInt(depositStr);
 
-    const account = await initializeNearAccount(ACCOUNT_ID);
+    const account = await initializeNearAccount(accountId);
 
     const usdcBalance = await getUSDCBalance(account);
 
