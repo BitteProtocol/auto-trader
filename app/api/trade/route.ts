@@ -19,8 +19,13 @@ async function tradeHandler(): Promise<NextResponse> {
 
     const { content, toolResults } = await callAgent(
       accountId,
+      // WTF - Now we are passing the system prompt twice...
       context.systemPrompt,
       agentId,
+      "", // evmAddress
+      "", // suiAddress
+      "", // nearAddress
+      context.systemPrompt,
     );
 
     const quoteResult = (toolResults as ToolResult[]).find(
