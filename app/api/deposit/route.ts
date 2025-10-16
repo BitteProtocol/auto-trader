@@ -2,29 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { BALANCE_UPDATE_DELAY } from '@/lib/utils'
 import { initializeNearAccount, depositUSDC, getUSDCBalance } from '@/lib/near'
 import { formatUnits } from '@/lib/viem';
+import { ACCOUNT_ID } from '@/lib/env';
+import { withCronSecret } from '@/lib/api-auth';
 
-export async function GET(request: NextRequest) {
+async function depositHandler(request: NextRequest) {
   try {
-    if (process.env.CRON_SECRET) {
-      const authHeader = request.headers.get('Authorization')
-      if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-    }
-
     const { searchParams } = new URL(request.url)
     const depositStr = searchParams.get('amount');
     if (!depositStr) {
       return NextResponse.json({ error: 'unspecified amount' }, { status: 400 })
     }
-    const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID
-    if (!accountId) {
-      return NextResponse.json({ error: 'accountId is not configured' }, { status: 500 })
-    }
 
     const depositAmount = BigInt(depositStr);
     
-    const account = await initializeNearAccount(accountId)
+    const account = await initializeNearAccount(ACCOUNT_ID)
     
     const usdcBalance = await getUSDCBalance(account)
 
@@ -51,3 +42,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to process deposit request' }, { status: 500 })
   }
 }
+
+export const GET = withCronSecret(depositHandler);

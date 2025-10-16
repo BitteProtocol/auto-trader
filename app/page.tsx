@@ -1,22 +1,18 @@
 "use client";
 
+import { DEPLOYMENT_URL, ACCOUNT_ID } from "@/lib/env";
 import { useEffect, useState } from "react";
 
 export default function Page() {
   const [deployed, setDeployed] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID;
+
   const baseUrl = "https://bitte-autonomous-agent-dashboard.vercel.app";
-  const DEPLOYMENT_URL = process.env.NEXT_PUBLIC_VERCEL_URL || '';
+  
 
   useEffect(() => {
-    if (!accountId) {
-      setLoading(false);
-      return;
-    }
-    
-    fetch(`${baseUrl}/api/deployment/check?accountId=${accountId}`)
+    fetch(`${baseUrl}/api/deployment/check?accountId=${ACCOUNT_ID}`)
       .then((res) => res.json())
       .then((data) => {
         setDeployed(data.deployed);
