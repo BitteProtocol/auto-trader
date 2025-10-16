@@ -1,6 +1,5 @@
 "use client";
 
-import { getEnvVar } from "@/lib/env";
 import { useEffect, useState } from "react";
 
 export default function Page() {
@@ -9,9 +8,17 @@ export default function Page() {
 
   const baseUrl = "https://bitte-autonomous-agent-dashboard.vercel.app";
 
+  // Load Next Public Envs
+  const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID;
+  const deploymentURL =process.env.NEXT_PUBLIC_VERCEL_URL || "";
+
   useEffect(() => {
+    if (!accountId) {
+      setLoading(false);
+      return;
+    }
     fetch(
-      `${baseUrl}/api/deployment/check?accountId=${getEnvVar("NEXT_PUBLIC_ACCOUNT_ID")}`,
+      `${baseUrl}/api/deployment/check?accountId=${accountId}`,
     )
       .then((res) => res.json())
       .then((data) => {
@@ -47,7 +54,7 @@ export default function Page() {
               register your agent.
             </p>
             <a
-              href={`${baseUrl}/deploy-url?url=${encodeURIComponent(getEnvVar("NEXT_PUBLIC_VERCEL_URL", ""))}`}
+              href={`${baseUrl}/deploy-url?url=${encodeURIComponent(deploymentURL)}`}
               className="button"
             >
               Register Agent
