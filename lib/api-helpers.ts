@@ -1,9 +1,8 @@
-import { ACCOUNT_ID, BITTE_API_KEY } from "./env";
+import { getEnvVar } from "./env";
 import { Quote, PositionWithPnL, CurrentPosition } from "./types";
 import { TOKEN_LIST } from "./utils";
 
 const API_BASE_URL = "https://bitte-autonomous-agent-dashboard.vercel.app";
-
 interface ApiCallOptions {
   method: "POST" | "GET";
   body?: any;
@@ -13,7 +12,7 @@ interface ApiCallOptions {
 async function makeApiCall(endpoint: string, options: ApiCallOptions) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${BITTE_API_KEY}`,
+    Authorization: `Bearer ${getEnvVar("BITTE_API_KEY")}`,
     ...options.headers,
   };
 
@@ -35,9 +34,12 @@ async function makeApiCall(endpoint: string, options: ApiCallOptions) {
   return response.json();
 }
 
-export async function storeTrade(quote: Quote): Promise<void> {
+export async function storeTrade(
+  accountId: string,
+  quote: Quote,
+): Promise<void> {
   try {
-    await makeApiCall(`/api/trader/${ACCOUNT_ID}/store-trade`, {
+    await makeApiCall(`/api/trader/${accountId}/store-trade`, {
       method: "POST",
       body: {
         quote,
@@ -52,13 +54,14 @@ export async function storeTrade(quote: Quote): Promise<void> {
 }
 
 export async function storePortfolioSnapshot(
+  accountId: string,
   positions: PositionWithPnL[],
   totalUsd: number,
   previousUsd: number,
   aiReasoning?: string,
 ): Promise<void> {
   try {
-    await makeApiCall(`/api/trader/${ACCOUNT_ID}/store-snapshot`, {
+    await makeApiCall(`/api/trader/${accountId}/store-snapshot`, {
       method: "POST",
       body: {
         positions,
