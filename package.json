@@ -5,9 +5,10 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
+    "lint": "next lint && prettier . --check",
     "format": "next lint --fix && prettier . --write",
-    "start": "next start"
+    "start": "next start",
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.24",
