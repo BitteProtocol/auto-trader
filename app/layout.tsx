@@ -1,7 +1,7 @@
 export const metadata = {
-  title: 'Autonomous Trading Agent',
-  description: 'Deployment status page',
-}
+  title: "Autonomous Trading Agent",
+  description: "Deployment status page",
+};
 
 const styles = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,17 +23,20 @@ const styles = `
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body>
         <style>{styles}</style>
         {children}
       </body>
     </html>
-  )
+  );
 }

@@ -150,7 +150,7 @@ export function logTradingAgentData({
   console.log(
     "TOTAL PORTFOLIO VALUE:",
     totalUsd,
-    `(Trading: $${tradingValue.toFixed(2)} + USDC: $${usdcValue.toFixed(2)})`
+    `(Trading: $${tradingValue.toFixed(2)} + USDC: $${usdcValue.toFixed(2)})`,
   );
   console.log("TRADING PNL:", pnlUsd, "PERCENT:", pnlPercent);
   console.log("CURRENT POSITIONS:", currentPositions);
@@ -164,4 +164,3 @@ export const roundToTwo = (value: number) => Math.round(value * 100) / 100;
 
 export const normalizeAsset = (asset: string) =>
   asset === "wNEAR" ? "NEAR" : asset;
-

@@ -7,9 +7,7 @@ export default function Page() {
   const [deployed, setDeployed] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
-
   const baseUrl = "https://bitte-autonomous-agent-dashboard.vercel.app";
-  
 
   useEffect(() => {
     fetch(`${baseUrl}/api/deployment/check?accountId=${ACCOUNT_ID}`)
@@ -33,7 +31,8 @@ export default function Page() {
         ) : deployed === true ? (
           <>
             <p className="description">
-              Your agent is registered and ready. Next step: deposit USDC to start trading.
+              Your agent is registered and ready. Next step: deposit USDC to
+              start trading.
             </p>
             <a href={`${baseUrl}/deposit-usdc`} className="button">
               Deposit USDC
@@ -42,9 +41,13 @@ export default function Page() {
         ) : (
           <>
             <p className="description">
-              You've completed the deployment step. Now you need to register your agent.
+              You&apos;ve completed the deployment step. Now you need to
+              register your agent.
             </p>
-            <a href={`${baseUrl}/deploy-url?url=${encodeURIComponent(DEPLOYMENT_URL)}`} className="button">
+            <a
+              href={`${baseUrl}/deploy-url?url=${encodeURIComponent(DEPLOYMENT_URL)}`}
+              className="button"
+            >
               Register Agent
             </a>
           </>
@@ -53,4 +56,3 @@ export default function Page() {
     </div>
   );
 }
-

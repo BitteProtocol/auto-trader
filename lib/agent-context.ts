@@ -10,102 +10,102 @@ import { TOKEN_LIST } from "./utils";
 import { AGENT_STRATEGY } from "./env";
 
 export async function buildAgentContext(
-	accountId: string,
-	account: Account,
+  accountId: string,
+  account: Account,
 ): Promise<AgentContext> {
-	const [portfolio, { marketPrices, marketOverviewData }, currentPositions] =
-		await Promise.all([
-			fetchPortfolioBalances(account),
-			fetchMarketPrices(),
-			getCurrentPositions(accountId),
-		]);
+  const [portfolio, { marketPrices, marketOverviewData }, currentPositions] =
+    await Promise.all([
+      fetchPortfolioBalances(account),
+      fetchMarketPrices(),
+      getCurrentPositions(accountId),
+    ]);
 
-	if (portfolio.length === 0) {
-		console.warn(
-			`No on-chain balances found for account ${accountId}, continuing with empty portfolio context`,
-		);
-	}
+  if (portfolio.length === 0) {
+    console.warn(
+      `No on-chain balances found for account ${accountId}, continuing with empty portfolio context`,
+    );
+  }
 
-	const {
-		positionsWithPnl,
-		totalUsd: tradingValue,
-		totalPnl,
-	} = calculatePositionsPnL(currentPositions, marketPrices, portfolio);
+  const {
+    positionsWithPnl,
+    totalUsd: tradingValue,
+    totalPnl,
+  } = calculatePositionsPnL(currentPositions, marketPrices, portfolio);
 
-	const usdcBalance = portfolio.find((p) => p.symbol === "USDC");
-	const usdcValue = usdcBalance ? parseFloat(usdcBalance.balanceFormatted) : 0;
+  const usdcBalance = portfolio.find((p) => p.symbol === "USDC");
+  const usdcValue = usdcBalance ? parseFloat(usdcBalance.balanceFormatted) : 0;
 
-	if (usdcValue > 0 && usdcBalance) {
-		positionsWithPnl.push(createUsdcPosition(usdcValue, usdcBalance.balance));
-	}
+  if (usdcValue > 0 && usdcBalance) {
+    positionsWithPnl.push(createUsdcPosition(usdcValue, usdcBalance.balance));
+  }
 
-	const totalUsd = tradingValue + usdcValue;
-	const totalInvested = currentPositions.reduce(
-		(sum, pos) => sum + pos.totalInvested,
-		0,
-	);
-	const pnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+  const totalUsd = tradingValue + usdcValue;
+  const totalInvested = currentPositions.reduce(
+    (sum, pos) => sum + pos.totalInvested,
+    0,
+  );
+  const pnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
 
-	const systemPrompt = generateSystemPrompt(
-		totalUsd,
-		totalPnl,
-		pnlPercent,
-		positionsWithPnl,
-		marketOverviewData,
-	);
+  const systemPrompt = generateSystemPrompt(
+    totalUsd,
+    totalPnl,
+    pnlPercent,
+    positionsWithPnl,
+    marketOverviewData,
+  );
 
-	return {
-		totalUsd,
-		totalPnl,
-		pnlPercent,
-		positionsWithPnl,
-		systemPrompt,
-		tradingValue,
-		usdcValue,
-		currentPositions,
-	};
+  return {
+    totalUsd,
+    totalPnl,
+    pnlPercent,
+    positionsWithPnl,
+    systemPrompt,
+    tradingValue,
+    usdcValue,
+    currentPositions,
+  };
 }
 
 function createUsdcPosition(
-	usdcValue: number,
-	rawBalance: string,
+  usdcValue: number,
+  rawBalance: string,
 ): PositionWithPnL {
-	return {
-		symbol: "USDC",
-		balance: usdcValue.toFixed(6),
-		rawBalance,
-		quantity: usdcValue,
-		avgEntryPrice: 1,
-		currentPrice: 1,
-		totalInvested: usdcValue,
-		currentValue: usdcValue,
-		price: 1,
-		usd_value: usdcValue,
-		pnl_usd: 0,
-		pnl_percent: 0,
-	};
+  return {
+    symbol: "USDC",
+    balance: usdcValue.toFixed(6),
+    rawBalance,
+    quantity: usdcValue,
+    avgEntryPrice: 1,
+    currentPrice: 1,
+    totalInvested: usdcValue,
+    currentValue: usdcValue,
+    price: 1,
+    usd_value: usdcValue,
+    pnl_usd: 0,
+    pnl_percent: 0,
+  };
 }
 
 function generateSystemPrompt(
-	totalUsd: number,
-	pnlUsd: number,
-	pnlPercent: number,
-	positionsWithPnl: PositionWithPnL[],
-	marketOverviewData: string,
+  totalUsd: number,
+  pnlUsd: number,
+  pnlPercent: number,
+  positionsWithPnl: PositionWithPnL[],
+  marketOverviewData: string,
 ): string {
-	const strategy = AGENT_STRATEGY;
-	return `
+  const strategy = AGENT_STRATEGY;
+  return `
 
 === PORTFOLIO DATA ===
 TOTAL VALUE: $${totalUsd.toFixed(2)} | OVERALL PNL: ${pnlUsd >= 0 ? "+" : ""}$${pnlUsd.toFixed(2)} (${pnlPercent >= 0 ? "+" : ""}${pnlPercent.toFixed(2)}%)
 
 OPEN POSITIONS:
 ${positionsWithPnl
-	.filter((pos) => pos.symbol !== "USDC" && Number(pos.rawBalance) >= 1000)
-	.map((pos) => {
-		return `${pos.symbol}: ${pos.balance} tokens (RAW: ${pos.rawBalance}) @ entry $${pos.avgEntryPrice.toFixed(4)} | Current $${pos.currentPrice.toFixed(4)} | Value: $${pos.usd_value.toFixed(2)} | PNL: ${pos.pnl_usd >= 0 ? "+" : ""}$${pos.pnl_usd.toFixed(2)} (${pos.pnl_percent >= 0 ? "+" : ""}${pos.pnl_percent.toFixed(1)}%)`;
-	})
-	.join("\n")}
+  .filter((pos) => pos.symbol !== "USDC" && Number(pos.rawBalance) >= 1000)
+  .map((pos) => {
+    return `${pos.symbol}: ${pos.balance} tokens (RAW: ${pos.rawBalance}) @ entry $${pos.avgEntryPrice.toFixed(4)} | Current $${pos.currentPrice.toFixed(4)} | Value: $${pos.usd_value.toFixed(2)} | PNL: ${pos.pnl_usd >= 0 ? "+" : ""}$${pos.pnl_usd.toFixed(2)} (${pos.pnl_percent >= 0 ? "+" : ""}${pos.pnl_percent.toFixed(1)}%)`;
+  })
+  .join("\n")}
 
 AVAILABLE USDC: $${positionsWithPnl.find((pos) => pos.symbol === "USDC")?.usd_value?.toFixed(2) || "0.00"} (RAW: ${positionsWithPnl.find((pos) => pos.symbol === "USDC")?.rawBalance || "0"})
 
