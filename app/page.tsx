@@ -10,16 +10,14 @@ export default function Page() {
 
   // Load Next Public Envs
   const accountId = process.env.NEXT_PUBLIC_ACCOUNT_ID;
-  const deploymentURL =process.env.NEXT_PUBLIC_VERCEL_URL || "";
+  const deploymentURL = process.env.NEXT_PUBLIC_VERCEL_URL || "";
 
   useEffect(() => {
     if (!accountId) {
       setLoading(false);
       return;
     }
-    fetch(
-      `${baseUrl}/api/deployment/check?accountId=${accountId}`,
-    )
+    fetch(`${baseUrl}/api/deployment/check?accountId=${accountId}`)
       .then((res) => res.json())
       .then((data) => {
         setDeployed(data.deployed);
