@@ -19,8 +19,6 @@ export const DEFAULT_STRATEGY: StrategyConfig = {
     "Dynamic sizing: 5-15% per trade (scales with account). Size calculation: Min($10, Max($5, USDC_balance * 0.10)). Account for slippage: Minimum $8 positions. Max 3-4 open positions at once.",
 };
 
-let envStrategy: StrategyConfig | undefined;
-
 export function getEnvStrategy(): StrategyConfig {
   const envStrategy = process.env.STRATEGY;
   if (envStrategy) {

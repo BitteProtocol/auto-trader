@@ -8,6 +8,7 @@ export function formatUnits(value: bigint, decimals: number) {
 
   display = display.padStart(decimals, "0");
 
+  // eslint-disable-next-line prefer-const
   let [integer, fraction] = [
     display.slice(0, display.length - decimals),
     display.slice(display.length - decimals),

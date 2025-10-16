@@ -5,7 +5,7 @@ import { TOKEN_LIST } from "./utils";
 const API_BASE_URL = "https://bitte-autonomous-agent-dashboard.vercel.app";
 interface ApiCallOptions {
   method: "POST" | "GET";
-  body?: any;
+  body?: object;
   headers?: Record<string, string>;
 }
 
