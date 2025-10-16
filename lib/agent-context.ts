@@ -103,11 +103,11 @@ OPEN POSITIONS:
 ${positionsWithPnl
   .filter((pos) => pos.symbol !== "USDC" && Number(pos.rawBalance) >= 1000)
   .map((pos) => {
-    return `${pos.symbol}: ${pos.balance} tokens (RAW: ${pos.rawBalance}) @ entry $${pos.avgEntryPrice.toFixed(4)} | Current $${pos.currentPrice.toFixed(4)} | Value: $${pos.usd_value.toFixed(2)} | PNL: ${pos.pnl_usd >= 0 ? "+" : ""}$${pos.pnl_usd.toFixed(2)} (${pos.pnl_percent >= 0 ? "+" : ""}${pos.pnl_percent.toFixed(1)}%)`;
+    return `${pos.symbol}: ${pos.balance} tokens | RAW_BALANCE=${pos.rawBalance} | Entry: $${pos.avgEntryPrice.toFixed(4)} | Current: $${pos.currentPrice.toFixed(4)} | Value: $${pos.usd_value.toFixed(2)} | PNL: ${pos.pnl_usd >= 0 ? "+" : ""}$${pos.pnl_usd.toFixed(2)} (${pos.pnl_percent >= 0 ? "+" : ""}${pos.pnl_percent.toFixed(1)}%)`;
   })
   .join("\n")}
 
-AVAILABLE USDC: $${positionsWithPnl.find((pos) => pos.symbol === "USDC")?.usd_value?.toFixed(2) || "0.00"} (RAW: ${positionsWithPnl.find((pos) => pos.symbol === "USDC")?.rawBalance || "0"})
+AVAILABLE USDC: $${positionsWithPnl.find((pos) => pos.symbol === "USDC")?.usd_value?.toFixed(2) || "0.00"} | RAW_BALANCE=${positionsWithPnl.find((pos) => pos.symbol === "USDC")?.rawBalance || "0"}
 
 === MARKET DATA ===
 ${marketOverviewData}
@@ -122,8 +122,8 @@ STEP 1: PORTFOLIO RISK MANAGEMENT
 ${strategy.step1Rules}
 - Profit target: +${strategy.riskParams.profitTarget}%
 - Stop loss: ${strategy.riskParams.stopLoss}%
-- Don't close positions with raw balance below 1000
-- If exit criteria met → IMMEDIATELY call QUOTE TOOL to sell for USDC
+- DUST POSITION RULE: Only close positions if RAW_BALANCE >= 1000 (the large integer shown as RAW_BALANCE= in position list, NOT the formatted token amount)
+- If exit criteria met AND RAW_BALANCE >= 1000 → IMMEDIATELY call QUOTE TOOL to sell for USDC
 
 STEP 2: MARKET OPPORTUNITY ANALYSIS (Only if no positions closed in Step 1)
 ${strategy.step2Rules}
@@ -173,8 +173,9 @@ AVAILABLE TRADING TOOLS (use sparingly due to step budget):
 • aggregateTrades: For buy/sell pressure and momentum validation
 
 QUOTE TOOL RAW BALANCE USAGE:
-- SELLING: Use EXACT RAW balance: ${positionsWithPnl.map((pos) => `${pos.symbol}: ${pos.rawBalance}`).join("\n")}
-- BUYING: Use EXACT RAW USDC balance (e.g., RAW: '17317308' → use '17317308')
+- SELLING: Use EXACT RAW_BALANCE value from position list above (the large integer, not the formatted amount)
+  ${positionsWithPnl.filter((pos) => Number(pos.rawBalance) > 0).map((pos) => `${pos.symbol}: RAW_BALANCE=${pos.rawBalance}`).join("\n  ")}
+- BUYING: Use EXACT RAW_BALANCE value for USDC (the large integer shown in AVAILABLE USDC line)
 
 ADAPTIVE TRADING PRINCIPLES:
 • FLEXIBILITY: No arbitrary hold times, exit when data says exit
