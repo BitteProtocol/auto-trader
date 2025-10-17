@@ -17,16 +17,12 @@ async function tradeHandler(): Promise<NextResponse> {
 
     const context = await buildAgentContext(accountId, account);
 
-    const { content, toolResults } = await callAgent(
+    const { content, toolResults } = await callAgent({
       accountId,
-      // WTF - Now we are passing the system prompt twice...
-      context.systemPrompt,
+      message: "TODO: Add message...",
       agentId,
-      "", // evmAddress
-      "", // suiAddress
-      "", // nearAddress
-      context.systemPrompt,
-    );
+      systemPrompt: context.systemPrompt,
+    });
 
     const quoteResult = (toolResults as ToolResult[]).find(
       (callResult) => callResult.result?.data?.data?.quote,
