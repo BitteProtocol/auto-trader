@@ -7,7 +7,7 @@ import {
   TGas,
   USDC_CONTRACT,
 } from "./utils";
-import { getEnvVar } from "./env";
+import { loadConfig } from "./config";
 
 const FIFTY_TGAS = BigInt(TGas * 50);
 const ONE_YOCTO = BigInt(1);
@@ -32,9 +32,8 @@ export async function getTokenBalance(
 export async function initializeNearAccount(
   accountId: string,
 ): Promise<Account> {
-  const keyPair = KeyPair.fromString(
-    getEnvVar("NEAR_PK") as `ed25519:${string}`,
-  );
+  const { nearPk } = loadConfig();
+  const keyPair = KeyPair.fromString(nearPk);
   const keyStore = new keyStores.InMemoryKeyStore();
   keyStore.setKey("mainnet", accountId, keyPair);
 

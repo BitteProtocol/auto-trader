@@ -7,7 +7,7 @@ import {
 import { getCurrentPositions } from "./api-helpers";
 import type { AgentContext, PositionWithPnL } from "./types";
 import { TOKEN_LIST } from "./utils";
-import { getEnvStrategy } from "./strategies";
+import { loadConfig } from "./config";
 
 export async function buildAgentContext(
   accountId: string,
@@ -93,7 +93,7 @@ function generateSystemPrompt(
   positionsWithPnl: PositionWithPnL[],
   marketOverviewData: string,
 ): string {
-  const strategy = getEnvStrategy();
+  const strategy = loadConfig().strategy;
   return `
 
 === PORTFOLIO DATA ===
