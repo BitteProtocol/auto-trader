@@ -174,7 +174,10 @@ AVAILABLE TRADING TOOLS (use sparingly due to step budget):
 
 QUOTE TOOL RAW BALANCE USAGE:
 - SELLING: Use EXACT RAW_BALANCE value from position list above (the large integer, not the formatted amount)
-  ${positionsWithPnl.filter((pos) => Number(pos.rawBalance) > 0).map((pos) => `${pos.symbol}: RAW_BALANCE=${pos.rawBalance}`).join("\n  ")}
+  ${positionsWithPnl
+    .filter((pos) => Number(pos.rawBalance) > 0)
+    .map((pos) => `${pos.symbol}: RAW_BALANCE=${pos.rawBalance}`)
+    .join("\n  ")}
 - BUYING: Use EXACT RAW_BALANCE value for USDC (the large integer shown in AVAILABLE USDC line)
 
 ADAPTIVE TRADING PRINCIPLES:
