@@ -3,6 +3,8 @@ import type { AgentContext, Token, ToolResult } from "./types";
 
 export const AGENT_ID = "trading-agent-kappa.vercel.app";
 
+export const USDC_CONTRACT =
+  "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
 export const INTENTS_CONTRACT_ID = "intents.near";
 export const TGas = 1000000000000;
 export const NEAR_RPC_URL = "https://free.rpc.fastnear.com";
