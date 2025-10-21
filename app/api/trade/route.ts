@@ -17,11 +17,12 @@ async function tradeHandler(): Promise<NextResponse> {
 
     const context = await buildAgentContext(accountId, account);
 
-    const { content, toolResults } = await callAgent(
+    const { content, toolResults } = await callAgent({
       accountId,
-      context.systemPrompt,
+      message: "TODO: Add message...",
       agentId,
-    );
+      systemPrompt: context.systemPrompt,
+    });
 
     const quoteResult = (toolResults as ToolResult[]).find(
       (callResult) => callResult.result?.data?.data?.quote,
