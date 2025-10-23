@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { BALANCE_UPDATE_DELAY, USDC_CONTRACT } from "@/lib/utils";
 import {
   initializeNearAccount,
-  depositUSDC,
-  getUSDCBalance,
-  intentsUSDCBalance,
-  withdrawUSDC,
   withdrawToken,
   intentsBalance,
 } from "@/lib/near";
@@ -46,7 +42,7 @@ export async function GET(request: NextRequest) {
     const account = await initializeNearAccount(accountId);
 
     const usdcBalance = await intentsBalance(account, token);
-    let withdrawAmount = bigIntMin(requestedWithdrawAmount, usdcBalance);
+    const withdrawAmount = bigIntMin(requestedWithdrawAmount, usdcBalance);
 
     if (withdrawAmount == ZERO) {
       return NextResponse.json(
