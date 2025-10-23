@@ -115,8 +115,8 @@ ${
             pos.pnl_percent >= strategy.riskParams.profitTarget
               ? '🟢 PROFIT'
               : pos.pnl_percent <= strategy.riskParams.stopLoss
-              ? '🔴 STOP'
-              : '⚪ HOLD'
+                ? '🔴 STOP'
+                : '⚪ HOLD'
 
           return `│ ${pos.symbol.padEnd(6)} [${exitSignal}] P&L: ${
             pos.pnl_percent >= 0 ? '+' : ''
