@@ -1,50 +1,42 @@
-import type { Account } from "near-api-js";
-import {
-  calculatePositionsPnL,
-  fetchMarketPrices,
-  fetchPortfolioBalances,
-} from "./market";
-import { getCurrentPositions } from "./api-helpers";
-import type { AgentContext, PositionWithPnL } from "./types";
-import { TOKEN_LIST } from "./utils";
-import { getEnvStrategy } from "./strategies";
+import type { Account } from 'near-api-js'
+import { calculatePositionsPnL, fetchMarketPrices, fetchPortfolioBalances } from './market'
+import { getCurrentPositions } from './api-helpers'
+import type { AgentContext, PositionWithPnL } from './types'
+import { TOKEN_LIST } from './utils'
+import { getEnvStrategy } from './strategies'
 
 export async function buildAgentContext(
   accountId: string,
   account: Account
 ): Promise<AgentContext> {
-  const [portfolio, { marketPrices, marketOverviewData }, currentPositions] =
-    await Promise.all([
-      fetchPortfolioBalances(account),
-      fetchMarketPrices(),
-      getCurrentPositions(accountId),
-    ]);
+  const [portfolio, { marketPrices, marketOverviewData }, currentPositions] = await Promise.all([
+    fetchPortfolioBalances(account),
+    fetchMarketPrices(),
+    getCurrentPositions(accountId),
+  ])
 
   if (portfolio.length === 0) {
     console.warn(
       `No on-chain balances found for account ${accountId}, continuing with empty portfolio context`
-    );
+    )
   }
 
   const {
     positionsWithPnl,
     totalUsd: tradingValue,
     totalPnl,
-  } = calculatePositionsPnL(currentPositions, marketPrices, portfolio);
+  } = calculatePositionsPnL(currentPositions, marketPrices, portfolio)
 
-  const usdcBalance = portfolio.find((p) => p.symbol === "USDC");
-  const usdcValue = usdcBalance ? parseFloat(usdcBalance.balanceFormatted) : 0;
+  const usdcBalance = portfolio.find((p) => p.symbol === 'USDC')
+  const usdcValue = usdcBalance ? parseFloat(usdcBalance.balanceFormatted) : 0
 
   if (usdcValue > 0 && usdcBalance) {
-    positionsWithPnl.push(createUsdcPosition(usdcValue, usdcBalance.balance));
+    positionsWithPnl.push(createUsdcPosition(usdcValue, usdcBalance.balance))
   }
 
-  const totalUsd = tradingValue + usdcValue;
-  const totalInvested = currentPositions.reduce(
-    (sum, pos) => sum + pos.totalInvested,
-    0
-  );
-  const pnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+  const totalUsd = tradingValue + usdcValue
+  const totalInvested = currentPositions.reduce((sum, pos) => sum + pos.totalInvested, 0)
+  const pnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0
 
   const systemPrompt = generateSystemPrompt(
     totalUsd,
@@ -52,7 +44,7 @@ export async function buildAgentContext(
     pnlPercent,
     positionsWithPnl,
     marketOverviewData
-  );
+  )
 
   return {
     totalUsd,
@@ -63,15 +55,12 @@ export async function buildAgentContext(
     tradingValue,
     usdcValue,
     currentPositions,
-  };
+  }
 }
 
-function createUsdcPosition(
-  usdcValue: number,
-  rawBalance: string
-): PositionWithPnL {
+function createUsdcPosition(usdcValue: number, rawBalance: string): PositionWithPnL {
   return {
-    symbol: "USDC",
+    symbol: 'USDC',
     balance: usdcValue.toFixed(6),
     rawBalance,
     quantity: usdcValue,
@@ -83,7 +72,7 @@ function createUsdcPosition(
     usd_value: usdcValue,
     pnl_usd: 0,
     pnl_percent: 0,
-  };
+  }
 }
 
 function generateSystemPrompt(
@@ -93,12 +82,12 @@ function generateSystemPrompt(
   positionsWithPnl: PositionWithPnL[],
   marketOverviewData: string
 ): string {
-  const strategy = getEnvStrategy();
+  const strategy = getEnvStrategy()
 
   const tradingPositions = positionsWithPnl.filter(
-    (pos) => pos.symbol !== "USDC" && Number(pos.rawBalance) >= 1000
-  );
-  const usdcPosition = positionsWithPnl.find((pos) => pos.symbol === "USDC");
+    (pos) => pos.symbol !== 'USDC' && Number(pos.rawBalance) >= 1000
+  )
+  const usdcPosition = positionsWithPnl.find((pos) => pos.symbol === 'USDC')
 
   return `
 
@@ -113,8 +102,8 @@ There is no "next time" - trades not executed now will NOT happen.
 PORTFOLIO STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Value: $${totalUsd.toFixed(2)}
-Overall P&L: ${pnlUsd >= 0 ? "+" : ""}$${pnlUsd.toFixed(2)} (${
-    pnlPercent >= 0 ? "+" : ""
+Overall P&L: ${pnlUsd >= 0 ? '+' : ''}$${pnlUsd.toFixed(2)} (${
+    pnlPercent >= 0 ? '+' : ''
   }${pnlPercent.toFixed(2)}%)
 
 ┌─ OPEN POSITIONS ─────────────────────────────────────┐
@@ -124,27 +113,25 @@ ${
         .map((pos) => {
           const exitSignal =
             pos.pnl_percent >= strategy.riskParams.profitTarget
-              ? "🟢 PROFIT"
+              ? '🟢 PROFIT'
               : pos.pnl_percent <= strategy.riskParams.stopLoss
-              ? "🔴 STOP"
-              : "⚪ HOLD";
+              ? '🔴 STOP'
+              : '⚪ HOLD'
 
           return `│ ${pos.symbol.padEnd(6)} [${exitSignal}] P&L: ${
-            pos.pnl_percent >= 0 ? "+" : ""
+            pos.pnl_percent >= 0 ? '+' : ''
           }${pos.pnl_percent.toFixed(2)}%
-│   Entry: $${pos.avgEntryPrice.toFixed(
-            4
-          )} → Current: $${pos.currentPrice.toFixed(4)}
+│   Entry: $${pos.avgEntryPrice.toFixed(4)} → Current: $${pos.currentPrice.toFixed(4)}
 │   Value: $${pos.usd_value.toFixed(2)}
-│   QUOTE amount: "${pos.rawBalance}"`;
+│   QUOTE amount: "${pos.rawBalance}"`
         })
-        .join("\n│\n")
-    : "│ No positions"
+        .join('\n│\n')
+    : '│ No positions'
 }
 └──────────────────────────────────────────────────────┘
 
 Available USDC: $${(usdcPosition?.usd_value || 0).toFixed(2)}
-QUOTE amount: "${usdcPosition?.rawBalance || "0"}"
+QUOTE amount: "${usdcPosition?.rawBalance || '0'}"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MARKET CONDITIONS
@@ -206,7 +193,7 @@ When you decide to trade, call QUOTE with:
 • Never use formatted amounts (e.g., not "0.179640")
 
 Asset IDs:
-${TOKEN_LIST.map((token) => `${token.symbol}: "${token.assetId}"`).join("\n")}
+${TOKEN_LIST.map((token) => `${token.symbol}: "${token.assetId}"`).join('\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DECISION FRAMEWORK
@@ -224,7 +211,7 @@ DECISION FRAMEWORK
 • Be DECISIVE - uncertainty = close position
 
 You have FULL trading authority. No approval needed.
-Execute your analysis immediately via QUOTE tool.`;
+Execute your analysis immediately via QUOTE tool.`
 }
 
 export const AGENT_TRIGGER_MESSAGE = `Execute your trading strategy with active portfolio management:
@@ -235,4 +222,4 @@ STEP 2 - OPPORTUNITY ASSESSMENT: After managing existing positions, scan for new
 
 STEP 3 - BUYING (IMMEDIATE EXECUTION): This is your ONLY chance to act. Execute all trading decisions NOW via the QUOTE tool. Analysis without execution accomplishes nothing.
 
-Remember: Locked capital in underperforming positions prevents capturing new opportunities. Be decisive and systematic in your approach.`;
+Remember: Locked capital in underperforming positions prevents capturing new opportunities. Be decisive and systematic in your approach.`

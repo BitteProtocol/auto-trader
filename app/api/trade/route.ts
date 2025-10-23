@@ -1,50 +1,48 @@
-import { NextResponse } from "next/server";
-import { BALANCE_UPDATE_DELAY, logTradingAgentData } from "@/lib/utils";
-import { storeTrade, storePortfolioSnapshot } from "@/lib/api-helpers";
-import { buildTransactionPayload, initializeNearAccount } from "@/lib/near";
-import { AGENT_TRIGGER_MESSAGE, buildAgentContext } from "@/lib/agent-context";
-import { callAgent } from "@bitte-ai/agent-sdk";
-import { ToolResult } from "@/lib/types";
-import { withCronSecret } from "@/lib/api-auth";
-import { getEnvVar } from "@/lib/env";
+import { NextResponse } from 'next/server'
+import { BALANCE_UPDATE_DELAY, logTradingAgentData } from '@/lib/utils'
+import { storeTrade, storePortfolioSnapshot } from '@/lib/api-helpers'
+import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
+import { AGENT_TRIGGER_MESSAGE, buildAgentContext } from '@/lib/agent-context'
+import { callAgent } from '@bitte-ai/agent-sdk'
+import { ToolResult } from '@/lib/types'
+import { withCronSecret } from '@/lib/api-auth'
+import { getEnvVar } from '@/lib/env'
 
 async function tradeHandler(): Promise<NextResponse> {
   try {
-    const accountId = getEnvVar("NEXT_PUBLIC_ACCOUNT_ID");
-    const agentId = "trading-agent-kappa.vercel.app";
+    const accountId = getEnvVar('NEXT_PUBLIC_ACCOUNT_ID')
+    const agentId = 'trading-agent-kappa.vercel.app'
 
-    const account = await initializeNearAccount(accountId);
+    const account = await initializeNearAccount(accountId)
 
-    const context = await buildAgentContext(accountId, account);
+    const context = await buildAgentContext(accountId, account)
 
     const { content, toolResults } = await callAgent({
       accountId,
       message: AGENT_TRIGGER_MESSAGE,
       agentId,
       systemPrompt: context.systemPrompt,
-    });
+    })
 
     const quoteResult = (toolResults as ToolResult[]).find(
       (callResult) => callResult.result?.data?.data?.quote
-    );
-    const quote = quoteResult?.result?.data?.data?.quote;
+    )
+    const quote = quoteResult?.result?.data?.data?.quote
 
     logTradingAgentData({
       context,
       content,
       pnlUsd: context.totalPnl,
       quoteResult,
-    });
+    })
 
     if (quote) {
-      const tx = await account.signAndSendTransaction(
-        buildTransactionPayload(quote)
-      );
-      console.log("Trade executed:", tx.transaction.hash);
-      await new Promise((resolve) => setTimeout(resolve, BALANCE_UPDATE_DELAY));
-      await storeTrade(accountId, quote);
+      const tx = await account.signAndSendTransaction(buildTransactionPayload(quote))
+      console.log('Trade executed:', tx.transaction.hash)
+      await new Promise((resolve) => setTimeout(resolve, BALANCE_UPDATE_DELAY))
+      await storeTrade(accountId, quote)
 
-      const updatedContext = await buildAgentContext(accountId, account);
+      const updatedContext = await buildAgentContext(accountId, account)
 
       await storePortfolioSnapshot(
         accountId,
@@ -52,7 +50,7 @@ async function tradeHandler(): Promise<NextResponse> {
         updatedContext.totalUsd,
         context.totalUsd,
         content
-      );
+      )
     } else {
       await storePortfolioSnapshot(
         accountId,
@@ -60,16 +58,13 @@ async function tradeHandler(): Promise<NextResponse> {
         context.totalUsd,
         context.totalUsd,
         content
-      );
+      )
     }
-    return NextResponse.json({ content });
+    return NextResponse.json({ content })
   } catch (error) {
-    console.error("Error in trading endpoint:", error);
-    return NextResponse.json(
-      { error: "Failed to process trading request" },
-      { status: 500 }
-    );
+    console.error('Error in trading endpoint:', error)
+    return NextResponse.json({ error: 'Failed to process trading request' }, { status: 500 })
   }
 }
 
-export const GET = withCronSecret(tradeHandler);
+export const GET = withCronSecret(tradeHandler)

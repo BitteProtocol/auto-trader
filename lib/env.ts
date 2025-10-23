@@ -1,10 +1,10 @@
 export function getEnvVar(key: string, defaultValue?: string): string {
-  const value = process.env[key];
+  const value = process.env[key]
   if (!value) {
     if (defaultValue !== undefined) {
-      return defaultValue;
+      return defaultValue
     }
-    throw new Error(`${key} is not set`);
+    throw new Error(`${key} is not set`)
   }
-  return value;
+  return value
 }
