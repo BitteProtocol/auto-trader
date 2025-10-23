@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     if (!withdrawStr) {
       return NextResponse.json(
         { error: "unspecified amount" },
-        { status: 400 },
+        { status: 400 }
       );
     }
     const token = searchParams.get("token") || USDC_CONTRACT;
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (!accountId) {
       return NextResponse.json(
         { error: "accountId is not configured" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     if (withdrawAmount == ZERO) {
       return NextResponse.json(
         { message: "Nothing to withdraw" },
-        { status: 200 },
+        { status: 200 }
       );
     }
 
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     console.error("Error in deposit endpoint:", error);
     return NextResponse.json(
       { error: "Failed to process deposit request" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

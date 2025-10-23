@@ -27,7 +27,9 @@ async function makeApiCall(endpoint: string, options: ApiCallOptions) {
       .json()
       .catch(() => ({ error: "Unknown error" }));
     throw new Error(
-      `API call failed: ${response.status} - ${error.error || response.statusText}`,
+      `API call failed: ${response.status} - ${
+        error.error || response.statusText
+      }`
     );
   }
 
@@ -36,7 +38,7 @@ async function makeApiCall(endpoint: string, options: ApiCallOptions) {
 
 export async function storeTrade(
   accountId: string,
-  quote: Quote,
+  quote: Quote
 ): Promise<void> {
   try {
     await makeApiCall(`/api/trader/${accountId}/store-trade`, {
@@ -58,7 +60,7 @@ export async function storePortfolioSnapshot(
   positions: PositionWithPnL[],
   totalUsd: number,
   previousUsd: number,
-  aiReasoning?: string,
+  aiReasoning?: string
 ): Promise<void> {
   try {
     await makeApiCall(`/api/trader/${accountId}/store-snapshot`, {
@@ -78,14 +80,14 @@ export async function storePortfolioSnapshot(
 }
 
 export async function getCurrentPositions(
-  accountId: string,
+  accountId: string
 ): Promise<CurrentPosition[]> {
   try {
     const response = await makeApiCall(
       `/api/trader/${accountId}/current-positions`,
       {
         method: "GET",
-      },
+      }
     );
     console.log("Current positions fetched successfully via API");
     return response;

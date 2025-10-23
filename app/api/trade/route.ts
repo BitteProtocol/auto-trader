@@ -21,11 +21,11 @@ async function tradeHandler(): Promise<NextResponse> {
       accountId,
       message: AGENT_TRIGGER_MESSAGE,
       agentId,
-      systemPrompt: context.systemPrompt
+      systemPrompt: context.systemPrompt,
     });
 
     const quoteResult = (toolResults as ToolResult[]).find(
-      (callResult) => callResult.result?.data?.data?.quote,
+      (callResult) => callResult.result?.data?.data?.quote
     );
     const quote = quoteResult?.result?.data?.data?.quote;
 
@@ -38,7 +38,7 @@ async function tradeHandler(): Promise<NextResponse> {
 
     if (quote) {
       const tx = await account.signAndSendTransaction(
-        buildTransactionPayload(quote),
+        buildTransactionPayload(quote)
       );
       console.log("Trade executed:", tx.transaction.hash);
       await new Promise((resolve) => setTimeout(resolve, BALANCE_UPDATE_DELAY));
@@ -51,7 +51,7 @@ async function tradeHandler(): Promise<NextResponse> {
         updatedContext.positionsWithPnl,
         updatedContext.totalUsd,
         context.totalUsd,
-        content,
+        content
       );
     } else {
       await storePortfolioSnapshot(
@@ -59,7 +59,7 @@ async function tradeHandler(): Promise<NextResponse> {
         context.positionsWithPnl,
         context.totalUsd,
         context.totalUsd,
-        content,
+        content
       );
     }
     return NextResponse.json({ content });
@@ -67,7 +67,7 @@ async function tradeHandler(): Promise<NextResponse> {
     console.error("Error in trading endpoint:", error);
     return NextResponse.json(
       { error: "Failed to process trading request" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

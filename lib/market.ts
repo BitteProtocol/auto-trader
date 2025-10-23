@@ -15,7 +15,7 @@ import {
 
 export function calculatePortfolioValue(
   portfolio: TokenBalance[],
-  marketPrices: MarketPrice[],
+  marketPrices: MarketPrice[]
 ): {
   positions: {
     symbol: string;
@@ -45,7 +45,7 @@ export function calculatePortfolioValue(
 export function calculatePositionsPnL(
   currentPositions: CurrentPosition[],
   marketPrices: MarketPrice[],
-  portfolio: TokenBalance[],
+  portfolio: TokenBalance[]
 ): { positionsWithPnl: PositionWithPnL[]; totalUsd: number; totalPnl: number } {
   const positionsWithPnl = currentPositions.map((position) => {
     const currentPrice = getTokenPrice(position.asset, marketPrices);
@@ -75,7 +75,7 @@ export function calculatePositionsPnL(
 
   const totalUsd = positionsWithPnl.reduce(
     (sum, pos) => sum + pos.currentValue,
-    0,
+    0
   );
   const totalPnl = positionsWithPnl.reduce((sum, pos) => sum + pos.pnl_usd, 0);
 
@@ -116,7 +116,7 @@ export async function fetchMarketPrices(): Promise<{
 }
 
 export async function fetchPortfolioBalances(
-  account: Account,
+  account: Account
 ): Promise<TokenBalance[]> {
   const balancePromises = TOKEN_LIST.map(async (token) => {
     try {

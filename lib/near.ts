@@ -14,7 +14,7 @@ const ONE_YOCTO = BigInt(1);
 
 export async function getTokenBalance(
   account: Account,
-  assetId: string,
+  assetId: string
 ): Promise<bigint> {
   try {
     const result = await account.viewFunction({
@@ -30,10 +30,10 @@ export async function getTokenBalance(
 }
 
 export async function initializeNearAccount(
-  accountId: string,
+  accountId: string
 ): Promise<Account> {
   const keyPair = KeyPair.fromString(
-    getEnvVar("NEAR_PK") as `ed25519:${string}`,
+    getEnvVar("NEAR_PK") as `ed25519:${string}`
   );
   const keyStore = new keyStores.InMemoryKeyStore();
   keyStore.setKey("mainnet", accountId, keyPair);
@@ -59,7 +59,7 @@ export function buildTransactionPayload(quote: Quote) {
           amount: quote.amountIn,
         },
         BigInt(TGas * 30),
-        BigInt(1),
+        BigInt(1)
       ),
     ],
   };
@@ -85,7 +85,7 @@ export async function intentsUSDCBalance(account: Account): Promise<bigint> {
 
 export async function intentsBalance(
   account: Account,
-  token: string,
+  token: string
 ): Promise<bigint> {
   try {
     const result = await account.viewFunction({
@@ -112,21 +112,21 @@ export async function depositUSDC(account: Account, amount: bigint) {
           msg: account.accountId,
         },
         FIFTY_TGAS,
-        ONE_YOCTO,
+        ONE_YOCTO
       ),
     ],
   });
 
   const hasSuccess = result.receipts_outcome.some((receipt) =>
     receipt.outcome.logs.some(
-      (log) => log.includes("mt_mint") && log.includes(account.accountId),
-    ),
+      (log) => log.includes("mt_mint") && log.includes(account.accountId)
+    )
   );
 
   const hasRefund = result.receipts_outcome.some((receipt) =>
     receipt.outcome.logs.some(
-      (log) => log.includes("ft_transfer") && log.includes('"memo":"refund"'),
-    ),
+      (log) => log.includes("ft_transfer") && log.includes('"memo":"refund"')
+    )
   );
 
   if (hasRefund || !hasSuccess) {
@@ -143,7 +143,7 @@ export async function withdrawUSDC(account: Account, amount: bigint) {
 export async function withdrawToken(
   account: Account,
   token: string,
-  amount: bigint,
+  amount: bigint
 ) {
   const result = await account.signAndSendTransaction({
     receiverId: INTENTS_CONTRACT_ID,
@@ -159,25 +159,25 @@ export async function withdrawToken(
           // msg: null
         },
         FIFTY_TGAS,
-        ONE_YOCTO,
+        ONE_YOCTO
       ),
     ],
   });
 
   const hasSuccess = result.receipts_outcome.some((receipt) =>
     receipt.outcome.logs.some(
-      (log) => log.includes("ft_transfer") && log.includes(account.accountId),
-    ),
+      (log) => log.includes("ft_transfer") && log.includes(account.accountId)
+    )
   );
   const hasRefund = result.receipts_outcome.some((receipt) =>
     receipt.outcome.logs.some(
-      (log) => log.includes("ft_transfer") && log.includes('"memo":"refund"'),
-    ),
+      (log) => log.includes("ft_transfer") && log.includes('"memo":"refund"')
+    )
   );
 
   if (hasRefund || !hasSuccess) {
     throw new Error(
-      `Withdraw failed - transaction was refunded ${result.transaction.hash}`,
+      `Withdraw failed - transaction was refunded ${result.transaction.hash}`
     );
   }
 

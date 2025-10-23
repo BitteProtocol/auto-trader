@@ -13,7 +13,7 @@ async function depositHandler(request: NextRequest) {
     if (!depositStr) {
       return NextResponse.json(
         { error: "unspecified amount" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -28,7 +28,7 @@ async function depositHandler(request: NextRequest) {
         {
           error: `Insufficient USDC balance (required: $${depositAmount}, available: $${usdcBalance})`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -47,7 +47,7 @@ async function depositHandler(request: NextRequest) {
     console.error("Error in deposit endpoint:", error);
     return NextResponse.json(
       { error: "Failed to process deposit request" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

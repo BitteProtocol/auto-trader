@@ -52,7 +52,9 @@ export default function Page() {
               register your agent.
             </p>
             <a
-              href={`${baseUrl}/deploy-url?url=${encodeURIComponent(deploymentURL)}`}
+              href={`${baseUrl}/deploy-url?url=${encodeURIComponent(
+                deploymentURL
+              )}`}
               className="button"
             >
               Register Agent

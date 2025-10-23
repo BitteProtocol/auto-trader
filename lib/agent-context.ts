@@ -11,7 +11,7 @@ import { getEnvStrategy } from "./strategies";
 
 export async function buildAgentContext(
   accountId: string,
-  account: Account,
+  account: Account
 ): Promise<AgentContext> {
   const [portfolio, { marketPrices, marketOverviewData }, currentPositions] =
     await Promise.all([
@@ -22,7 +22,7 @@ export async function buildAgentContext(
 
   if (portfolio.length === 0) {
     console.warn(
-      `No on-chain balances found for account ${accountId}, continuing with empty portfolio context`,
+      `No on-chain balances found for account ${accountId}, continuing with empty portfolio context`
     );
   }
 
@@ -42,7 +42,7 @@ export async function buildAgentContext(
   const totalUsd = tradingValue + usdcValue;
   const totalInvested = currentPositions.reduce(
     (sum, pos) => sum + pos.totalInvested,
-    0,
+    0
   );
   const pnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
 
@@ -51,7 +51,7 @@ export async function buildAgentContext(
     totalPnl,
     pnlPercent,
     positionsWithPnl,
-    marketOverviewData,
+    marketOverviewData
   );
 
   return {
@@ -68,7 +68,7 @@ export async function buildAgentContext(
 
 function createUsdcPosition(
   usdcValue: number,
-  rawBalance: string,
+  rawBalance: string
 ): PositionWithPnL {
   return {
     symbol: "USDC",
@@ -87,21 +87,20 @@ function createUsdcPosition(
 }
 
 function generateSystemPrompt(
-	totalUsd: number,
-	pnlUsd: number,
-	pnlPercent: number,
-	positionsWithPnl: PositionWithPnL[],
-	marketOverviewData: string,
+  totalUsd: number,
+  pnlUsd: number,
+  pnlPercent: number,
+  positionsWithPnl: PositionWithPnL[],
+  marketOverviewData: string
 ): string {
-	const strategy = getEnvStrategy();
+  const strategy = getEnvStrategy();
 
-	const tradingPositions = positionsWithPnl.filter(
-		(pos) => pos.symbol !== "USDC" && Number(pos.rawBalance) >= 1000
-	  );
-	  const usdcPosition = positionsWithPnl.find((pos) => pos.symbol === "USDC");
-	 
-	  
-	return `
+  const tradingPositions = positionsWithPnl.filter(
+    (pos) => pos.symbol !== "USDC" && Number(pos.rawBalance) >= 1000
+  );
+  const usdcPosition = positionsWithPnl.find((pos) => pos.symbol === "USDC");
+
+  return `
 
 🤖 AUTONOMOUS TRADING AGENT - ONE-SHOT EXECUTION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -114,21 +113,34 @@ There is no "next time" - trades not executed now will NOT happen.
 PORTFOLIO STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Value: $${totalUsd.toFixed(2)}
-Overall P&L: ${pnlUsd >= 0 ? "+" : ""}$${pnlUsd.toFixed(2)} (${pnlPercent >= 0 ? "+" : ""}${pnlPercent.toFixed(2)}%)
+Overall P&L: ${pnlUsd >= 0 ? "+" : ""}$${pnlUsd.toFixed(2)} (${
+    pnlPercent >= 0 ? "+" : ""
+  }${pnlPercent.toFixed(2)}%)
 
 ┌─ OPEN POSITIONS ─────────────────────────────────────┐
-${tradingPositions.length > 0 ? tradingPositions.map((pos) => {
-  const exitSignal = pos.pnl_percent >= strategy.riskParams.profitTarget 
-    ? "🟢 PROFIT" 
-    : pos.pnl_percent <= strategy.riskParams.stopLoss 
-    ? "🔴 STOP" 
-    : "⚪ HOLD";
-  
-  return `│ ${pos.symbol.padEnd(6)} [${exitSignal}] P&L: ${(pos.pnl_percent >= 0 ? "+" : "")}${pos.pnl_percent.toFixed(2)}%
-│   Entry: $${pos.avgEntryPrice.toFixed(4)} → Current: $${pos.currentPrice.toFixed(4)}
+${
+  tradingPositions.length > 0
+    ? tradingPositions
+        .map((pos) => {
+          const exitSignal =
+            pos.pnl_percent >= strategy.riskParams.profitTarget
+              ? "🟢 PROFIT"
+              : pos.pnl_percent <= strategy.riskParams.stopLoss
+              ? "🔴 STOP"
+              : "⚪ HOLD";
+
+          return `│ ${pos.symbol.padEnd(6)} [${exitSignal}] P&L: ${
+            pos.pnl_percent >= 0 ? "+" : ""
+          }${pos.pnl_percent.toFixed(2)}%
+│   Entry: $${pos.avgEntryPrice.toFixed(
+            4
+          )} → Current: $${pos.currentPrice.toFixed(4)}
 │   Value: $${pos.usd_value.toFixed(2)}
 │   QUOTE amount: "${pos.rawBalance}"`;
-}).join("\n│\n") : "│ No positions"}
+        })
+        .join("\n│\n")
+    : "│ No positions"
+}
 └──────────────────────────────────────────────────────┘
 
 Available USDC: $${(usdcPosition?.usd_value || 0).toFixed(2)}
@@ -194,7 +206,7 @@ When you decide to trade, call QUOTE with:
 • Never use formatted amounts (e.g., not "0.179640")
 
 Asset IDs:
-${TOKEN_LIST.map((token) => `${token.symbol}: "${token.assetId}"`).join('\n')}
+${TOKEN_LIST.map((token) => `${token.symbol}: "${token.assetId}"`).join("\n")}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DECISION FRAMEWORK
@@ -214,7 +226,6 @@ DECISION FRAMEWORK
 You have FULL trading authority. No approval needed.
 Execute your analysis immediately via QUOTE tool.`;
 }
-
 
 export const AGENT_TRIGGER_MESSAGE = `Execute your trading strategy with active portfolio management:
 

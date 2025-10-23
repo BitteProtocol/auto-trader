@@ -28,7 +28,7 @@ export function getEnvStrategy(): StrategyConfig {
     } catch (error) {
       console.warn(
         "Failed to parse STRATEGY environment variable, using default:",
-        error,
+        error
       );
     }
   }
