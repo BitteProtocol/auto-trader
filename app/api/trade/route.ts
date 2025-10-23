@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { BALANCE_UPDATE_DELAY, logTradingAgentData } from "@/lib/utils";
 import { storeTrade, storePortfolioSnapshot } from "@/lib/api-helpers";
 import { buildTransactionPayload, initializeNearAccount } from "@/lib/near";
-import { buildAgentContext } from "@/lib/agent-context";
+import { AGENT_TRIGGER_MESSAGE, buildAgentContext } from "@/lib/agent-context";
 import { callAgent } from "@bitte-ai/agent-sdk";
 import { ToolResult } from "@/lib/types";
 import { withCronSecret } from "@/lib/api-auth";
@@ -17,11 +17,12 @@ async function tradeHandler(): Promise<NextResponse> {
 
     const context = await buildAgentContext(accountId, account);
 
-    const { content, toolResults } = await callAgent(
+    const { content, toolResults } = await callAgent({
       accountId,
-      context.systemPrompt,
+      message: AGENT_TRIGGER_MESSAGE,
       agentId,
-    );
+      systemPrompt: context.systemPrompt
+    });
 
     const quoteResult = (toolResults as ToolResult[]).find(
       (callResult) => callResult.result?.data?.data?.quote,
