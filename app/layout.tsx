@@ -1,7 +1,7 @@
 export const metadata = {
-  title: "Autonomous Trading Agent",
-  description: "Deployment status page",
-};
+  title: 'Autonomous Trading Agent',
+  description: 'Deployment status page',
+}
 
 const styles = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -18,13 +18,9 @@ const styles = `
     .description { font-size: 18px; }
     .button { width: 100%; max-width: 280px; }
   }
-`;
+`
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -38,5 +34,5 @@ export default function RootLayout({
         {children}
       </body>
     </html>
-  );
+  )
 }

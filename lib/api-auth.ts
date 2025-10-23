@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getEnvVar } from "./env";
+import { NextRequest, NextResponse } from 'next/server'
+import { getEnvVar } from './env'
 
-type AuthenticatedCallHandler = (req: NextRequest) => Promise<NextResponse>;
+type AuthenticatedCallHandler = (req: NextRequest) => Promise<NextResponse>
 
 export function withCronSecret(handler: AuthenticatedCallHandler) {
   return async (req: NextRequest): Promise<NextResponse> => {
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader !== `Bearer ${getEnvVar("CRON_SECRET")}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authHeader = req.headers.get('Authorization')
+    if (authHeader !== `Bearer ${getEnvVar('CRON_SECRET')}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    return handler(req);
-  };
+    return handler(req)
+  }
 }
