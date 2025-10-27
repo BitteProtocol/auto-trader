@@ -43,7 +43,8 @@ export async function buildAgentContext(
     totalPnl,
     pnlPercent,
     positionsWithPnl,
-    marketOverviewData
+    marketOverviewData,
+    accountId
   )
 
   return {
@@ -80,7 +81,8 @@ function generateSystemPrompt(
   pnlUsd: number,
   pnlPercent: number,
   positionsWithPnl: PositionWithPnL[],
-  marketOverviewData: string
+  marketOverviewData: string,
+  accountId: string
 ): string {
   const strategy = getEnvStrategy()
 
@@ -97,6 +99,7 @@ function generateSystemPrompt(
 CRITICAL: You have ONE response to analyze and execute.
 If you decide to trade, you MUST call QUOTE in THIS response.
 There is no "next time" - trades not executed now will NOT happen.
+Your near account id is: ${accountId}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PORTFOLIO STATUS
@@ -191,6 +194,8 @@ QUOTE TOOL USAGE (HOW TO EXECUTE)
 When you decide to trade, call QUOTE with:
 • amount: Use exact values shown above (e.g., "179578108")
 • Never use formatted amounts (e.g., not "0.179640")
+• Recipient and refund fields on the quote are always ${accountId}
+• NEVER halucinate a random account id for the recipient or refund fields
 
 Asset IDs:
 ${TOKEN_LIST.map((token) => `${token.symbol}: "${token.assetId}"`).join('\n')}

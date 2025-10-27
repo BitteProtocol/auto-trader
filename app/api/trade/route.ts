@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { BALANCE_UPDATE_DELAY, logTradingAgentData } from '@/lib/utils'
+import { BALANCE_UPDATE_DELAY, logTradingAgentData, validateQuote } from '@/lib/utils'
 import { storeTrade, storePortfolioSnapshot } from '@/lib/api-helpers'
 import { buildTransactionPayload, initializeNearAccount } from '@/lib/near'
 import { AGENT_TRIGGER_MESSAGE, buildAgentContext } from '@/lib/agent-context'
@@ -37,6 +37,7 @@ async function tradeHandler(): Promise<NextResponse> {
     })
 
     if (quote) {
+      validateQuote(quote, accountId)
       const tx = await account.signAndSendTransaction(buildTransactionPayload(quote))
       console.log('Trade executed:', tx.transaction.hash)
       await new Promise((resolve) => setTimeout(resolve, BALANCE_UPDATE_DELAY))

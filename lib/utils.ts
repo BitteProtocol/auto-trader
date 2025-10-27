@@ -1,5 +1,5 @@
 import { type ClassValue, clsx } from 'clsx'
-import type { AgentContext, Token, ToolResult } from './types'
+import type { AgentContext, Token, ToolResult, Quote } from './types'
 
 export const AGENT_ID = 'trading-agent-kappa.vercel.app'
 
@@ -155,3 +155,16 @@ export function logTradingAgentData({
 export const roundToTwo = (value: number) => Math.round(value * 100) / 100
 
 export const normalizeAsset = (asset: string) => (asset === 'wNEAR' ? 'NEAR' : asset)
+
+export function validateQuote(quote: Quote, accountId: string): void {
+  if (quote.recipient !== accountId) {
+    throw new Error(
+      `Quote validation failed: recipient (${quote.recipient}) does not match accountId (${accountId})`
+    )
+  }
+  if (quote.refundTo !== accountId) {
+    throw new Error(
+      `Quote validation failed: refundTo (${quote.refundTo}) does not match accountId (${accountId})`
+    )
+  }
+}

@@ -64,6 +64,8 @@ export interface PositionWithPnL {
 }
 
 export interface Quote {
+  refundTo: string
+  recipient: string
   originAsset: string
   destinationAsset: string
   amountIn: string
