@@ -148,7 +148,7 @@ export function logTradingAgentData({
   console.log('CURRENT POSITIONS:', currentPositions)
   console.log('POSITIONS WITH PNL:', positionsWithPnl)
   console.log('=== REASONING ===')
-  console.log('tradeResult', content, quoteResult)
+  console.log('tradeResult', content, quoteResult?.result, quoteResult?.result.data.data.quote)
   console.log('==========================')
 }
 
