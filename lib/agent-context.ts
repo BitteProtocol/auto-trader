@@ -186,7 +186,7 @@ ${strategy.step3Rules}
 Constraints:
 • Position size: ${strategy.riskParams.positionSize} of USDC
 • Max positions: ${strategy.riskParams.maxPositions}
-• Min position: $8 after slippage
+• Min position: $1 after slippage
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 QUOTE TOOL USAGE (HOW TO EXECUTE)
