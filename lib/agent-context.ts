@@ -3,7 +3,7 @@ import { calculatePositionsPnL, fetchMarketPrices, fetchPortfolioBalances } from
 import { getCurrentPositions } from './api-helpers'
 import type { AgentContext, PositionWithPnL } from './types'
 import { TOKEN_LIST } from './utils'
-import { getEnvStrategy } from './strategies'
+import { loadConfig } from './config'
 
 export async function buildAgentContext(
   accountId: string,
@@ -84,7 +84,7 @@ function generateSystemPrompt(
   marketOverviewData: string,
   accountId: string
 ): string {
-  const strategy = getEnvStrategy()
+  const strategy = loadConfig().strategy
 
   const tradingPositions = positionsWithPnl.filter(
     (pos) => pos.symbol !== 'USDC' && Number(pos.rawBalance) >= 1000
