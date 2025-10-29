@@ -1,4 +1,4 @@
-import { getEnvVar } from './env'
+import { loadConfig } from './config'
 import { Quote, PositionWithPnL, CurrentPosition } from './types'
 import { TOKEN_LIST } from './utils'
 
@@ -10,9 +10,10 @@ interface ApiCallOptions {
 }
 
 async function makeApiCall(endpoint: string, options: ApiCallOptions) {
+  const { bitteKey } = loadConfig()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${getEnvVar('BITTE_API_KEY')}`,
+    Authorization: `Bearer ${bitteKey}`,
     ...options.headers,
   }
 

@@ -2,7 +2,7 @@ import { actionCreators } from '@near-js/transactions'
 import { Account, KeyPair, keyStores, Near } from 'near-api-js'
 import type { Quote } from './types'
 import { INTENTS_CONTRACT_ID, NEAR_RPC_URL, TGas, USDC_CONTRACT } from './utils'
-import { getEnvVar } from './env'
+import { loadConfig } from './config'
 
 const FIFTY_TGAS = BigInt(TGas * 50)
 const ONE_YOCTO = BigInt(1)
@@ -22,7 +22,8 @@ export async function getTokenBalance(account: Account, assetId: string): Promis
 }
 
 export async function initializeNearAccount(accountId: string): Promise<Account> {
-  const keyPair = KeyPair.fromString(getEnvVar('NEAR_PK') as `ed25519:${string}`)
+  const { nearPk } = loadConfig()
+  const keyPair = KeyPair.fromString(nearPk)
   const keyStore = new keyStores.InMemoryKeyStore()
   keyStore.setKey('mainnet', accountId, keyPair)
 
