@@ -54,9 +54,9 @@ export function parseConfig(configString: string): ServerConfig {
 
 export function loadConfig(): ServerConfig {
   try {
-    return parseConfig(getEnvVar('DEPLOYMENT_CONFIG'))
+    return parseConfig(getEnvVar('SERVER_CONFIG'))
   } catch (error: unknown) {
-    console.warn('Failed to parse DEPLOYMENT_CONFIG, trying individual env vars', String(error))
+    console.warn('Failed to parse SERVER_CONFIG, trying individual env vars', String(error))
     return {
       strategy: JSON.parse(getEnvVar('STRATEGY', JSON.stringify(DEFAULT_STRATEGY))),
       cronSecret: getEnvVar('CRON_SECRET'),
